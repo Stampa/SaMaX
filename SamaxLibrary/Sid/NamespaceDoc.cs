@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="NamespaceDoc.cs" company="">
+// <copyright file="NamespaceDoc.cs" company="TODO">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
