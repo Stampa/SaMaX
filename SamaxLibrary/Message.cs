@@ -25,9 +25,9 @@ namespace SamaxLibrary
         /// <summary>
         /// Gets the bytes that compose this message.
         /// </summary>
-        public ReadOnlyCollection<byte> Bytes
+        public byte[] Bytes
         {
-            get { return this.bytes; }
+            get { return this.bytes.ToArray(); }
         }
 
         /// <summary>
