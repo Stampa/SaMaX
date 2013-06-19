@@ -44,9 +44,9 @@
     <Compile Include="Message.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SidMessages\NamespaceDoc.cs" />
-    <Compile Include="SidMessages\SidMessage.cs" />
-    <Compile Include="SidMessages\SidMessageType.cs" />
+    <Compile Include="Sid\NamespaceDoc.cs" />
+    <Compile Include="Sid\SidMessage.cs" />
+    <Compile Include="Sid\SidMessageType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

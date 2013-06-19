@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SamaxLibrary.SidMessages
+namespace SamaxLibrary.Sid
 {
     using System;
     using System.Collections.Generic;

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SamaxLibrary.SidMessages
+namespace SamaxLibrary.Sid
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace SamaxLibrary.SidMessages
     using System.Text;
 
     /// <summary>
-    /// The <see cref="SamaxLibrary.SidMessages"/> namespace contains classes related to the SID protocol of Battle.Net.
+    /// The <see cref="SamaxLibrary.Sid"/> namespace contains classes related to the SID protocol of Battle.Net.
     /// </summary>
     [CompilerGenerated]
     [SuppressMessage(
