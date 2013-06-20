@@ -44,8 +44,10 @@
     <Compile Include="Message.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MessageDirection.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />
     <Compile Include="Sid\SidMessage.cs" />
+    <Compile Include="Sid\SidMessageFactory.cs" />
     <Compile Include="Sid\SidMessageType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

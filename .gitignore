@@ -109,3 +109,4 @@ UpgradeLog*.XML
 
 # SHFB documentation output
 Help/
+*.shfbproj_*
