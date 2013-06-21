@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MiscUtil">
+      <HintPath>..\Libraries\MiscUtil\MiscUtil.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,6 +51,8 @@
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />
+    <Compile Include="Sid\SidByteParser.cs" />
+    <Compile Include="Sid\SidByteParserException.cs" />
     <Compile Include="Sid\SidMessage.cs" />
     <Compile Include="Sid\SidMessageFactory.cs" />
     <Compile Include="Sid\SidMessageType.cs" />

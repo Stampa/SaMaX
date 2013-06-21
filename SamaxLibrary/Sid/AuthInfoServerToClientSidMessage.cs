@@ -75,7 +75,43 @@ namespace SamaxLibrary.Sid
                 throw new ArgumentNullException("messageBytes");
             }
 
-            // TODO: Set the properties here
+            SidByteParser parser = new SidByteParser(messageBytes);
+
+            try
+            {
+                this.LogonType = parser.ReadInt32AsEnum<LogonType>();
+                this.ServerToken = parser.ReadInt32();
+                this.UdpValue = parser.ReadInt32();
+
+                UInt64 fileTime = parser.ReadUInt64();
+                Int64 signedFileTime = (Int64)fileTime; // TODO: What happens if fileTime is large?
+
+                try
+                {
+                    this.MpqFileTime = DateTime.FromFileTime(signedFileTime); // TODO: FromFileTimeUtc?
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    throw new ArgumentException(
+                        "The parsed MPQ file time could not be converted to a DateTime", ex);
+                }
+
+                this.MpqFileName = parser.ReadAsciiString();
+                this.ValueString = parser.ReadAsciiString();
+
+                // TODO: Parse the 128-bit server signature for Warcraft 3 here
+            }
+            catch (SidByteParserException ex)
+            {
+                throw new ArgumentException(
+                    String.Format("The bytes could not be parsed successfully: {0}", ex.Message),
+                    ex);
+            }
+
+            if (parser.HasBytesToParse)
+            {
+                throw new ArgumentException("There were unexpected bytes at the end of the message.");
+            }
         }
     }
 }

@@ -64,6 +64,8 @@ namespace SamaxLibrary.Sid
                 throw new ArgumentNullException("messageBytes");
             }
 
+            //// TODO: Validate the entire header (not just the message bytes) here
+
             const int MessageTypeIndex = 1;
             if (messageBytes.Length <= MessageTypeIndex)
             {

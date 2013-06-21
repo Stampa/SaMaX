@@ -15,7 +15,7 @@ namespace SamaxLibrary.Sid
     /// Defines the logon types.
     /// TODO: Logon types for what? Battle.Net v. 1?
     /// </summary>
-    public enum LogonType : uint
+    public enum LogonType : int
     {
         /// <summary>
         /// Indicates that Blizzard's broken version of the SHA-1 algorithm is used when logging on.
