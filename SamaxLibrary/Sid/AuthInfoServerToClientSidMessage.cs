@@ -1,0 +1,81 @@
+﻿// -----------------------------------------------------------------------
+// <copyright file="AuthInfoServerToClientSidMessage.cs" company="TODO">
+// TODO: Update copyright text.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace SamaxLibrary.Sid
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    /// <summary>
+    /// This class represents a SID_AUTH_INFO message sent from the server to the client.
+    /// </summary>
+    public class AuthInfoServerToClientSidMessage : SidMessage
+    {
+        /// <summary>
+        /// The SID message type of the SID message that the
+        /// <see cref="AuthInfoServerToClientSidMessage"/> class represents.
+        /// </summary>
+        public new const SidMessageType MessageType = SidMessageType.AuthInfo;
+
+        /// <summary>
+        /// Gets the logon type that the server expects.
+        /// </summary>
+        /// <remarks>For StarCraft (including the expansion) and Diablo 2 (also including the
+        /// expansion), <see cref="SamaxLibrary.Sid.LogonType.BrokenSha1"/> is used.</remarks>
+        public LogonType LogonType { get; private set; }
+
+        /// <summary>
+        /// Gets the server token.
+        /// </summary>
+        /// <remarks>This value is used in subsequent message in the logon process.</remarks>
+        public Int32 ServerToken { get; private set; }
+
+        /// <summary>
+        /// Gets the UDP value.
+        /// </summary>
+        /// <remarks>TODO: Add information here (it seems to be unclear what this value is though)
+        /// </remarks>
+        public Int32 UdpValue { get; private set; }
+
+        /// <summary>
+        /// Gets the MPQ file time.
+        /// TODO: Clarify what this is
+        /// </summary>
+        public DateTime MpqFileTime { get; private set; }
+
+        /// <summary>
+        /// Gets the MPQ file name.
+        /// TODO: The name of what MPQ file? The IX86-ver thing?
+        /// </summary>
+        public string MpqFileName { get; private set; }
+
+        /// <summary>
+        /// Gets the value string.
+        /// TODO: Clarify what the value string is.
+        /// </summary>
+        public string ValueString { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthInfoServerToClientSidMessage"/> class
+        /// from an array of bytes.
+        /// </summary>
+        /// <param name="messageBytes">An array of bytes that compose the message.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
+        /// </exception>
+        public AuthInfoServerToClientSidMessage(byte[] messageBytes)
+            : base(messageBytes, MessageType)
+        {
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
+            // TODO: Set the properties here
+        }
+    }
+}
