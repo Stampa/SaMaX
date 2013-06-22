@@ -48,9 +48,12 @@
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MessageDirection.cs" />
+    <Compile Include="Sid\AuthInfoClientToServerSidMessage.cs" />
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />
+    <Compile Include="Sid\PlatformID.cs" />
+    <Compile Include="Sid\ProductID.cs" />
     <Compile Include="Sid\SidByteParser.cs" />
     <Compile Include="Sid\SidByteParserException.cs" />
     <Compile Include="Sid\SidMessage.cs" />

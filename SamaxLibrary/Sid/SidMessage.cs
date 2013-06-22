@@ -15,10 +15,9 @@ namespace SamaxLibrary.Sid
     /// This class represents a message of the SID protocol used in communication with some of
     /// the servers of Battle.Net.
     /// </summary>
-    /// <remarks>
-    /// <para>Strings are encoded in ASCII</para>
-    /// <para>Most chunks larger than one byte are encoded in little-endian.</para>
-    /// </remarks>
+    /// <remarks>See <see cref="SidByteParser"/> for information about the byte-level
+    /// representation of SID messages.</remarks>
+    /// <seealso cref="SidByteParser"/>
     public abstract class SidMessage : Message
     {
         /// <summary>

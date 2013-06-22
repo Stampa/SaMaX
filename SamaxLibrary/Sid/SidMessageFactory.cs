@@ -75,6 +75,9 @@ namespace SamaxLibrary.Sid
             SidMessage message;
             switch (messageType)
             {
+                case SidMessageType.AuthInfo:
+                    message = new AuthInfoClientToServerSidMessage(messageBytes);
+                    break;
                 default:
                     Debug.Fail(String.Format("Invalid SID message type for client-to-server message: {0}", messageType));
                     message = null;
