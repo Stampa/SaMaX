@@ -13,7 +13,7 @@ namespace SamaxLibrary.Sid
     using MiscUtil.Conversion;
 
     /// <summary>
-    /// This class is used to parse the array of bytes that compose a SID message.
+    /// This class is used to parse the array of bytes that composes a SID message.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -72,10 +72,27 @@ namespace SamaxLibrary.Sid
         /// Initializes a new instance of the <see cref="SidByteParser"/> class.
         /// </summary>
         /// <param name="bytesToParse">The array of bytes to parse.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="bytesToParse"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="bytesToParse"/> is too small to
+        /// contain a SID header (see <see cref="SidHeader.HeaderLength"/>).</exception>
         public SidByteParser(byte[] bytesToParse)
         {
+            if (bytesToParse == null)
+            {
+                throw new ArgumentNullException("bytesToParse");
+            }
+
+            if (bytesToParse.Length < SidHeader.HeaderLength)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The length of the byte array ({0}) is too small to contain a SID header",
+                        bytesToParse.Length));
+            }
+
             this.bytes = bytesToParse;
-            this.index = 4; // TODO: This would appear to be a magic number
+            this.index = SidHeader.HeaderLength;
             this.converter = new LittleEndianBitConverter();
         }
 
@@ -286,7 +303,7 @@ namespace SamaxLibrary.Sid
                         value,
                         enumType),
                     ex);
-            }            
+            }
         }
     }
 }

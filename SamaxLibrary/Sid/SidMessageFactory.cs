@@ -30,8 +30,8 @@ namespace SamaxLibrary.Sid
         /// </exception>
         /// <exception cref="ArgumentException"><paramref name="messageDirection"/> is not a
         /// constant of the <see cref="MessageDirection"/> enumeration, or
-        /// <paramref name="messageBytes"/> does not contain a valid SID message type.</exception>
-        /// TODO: Remember to add more exceptions of the "direction-specific" factory methods.
+        /// <paramref name="messageBytes"/> does not compose a valid SID message in the specified
+        /// direction.</exception>
         public static SidMessage CreateMessageFromBytes(byte[] messageBytes, MessageDirection messageDirection)
         {
             if (messageBytes == null)
@@ -65,9 +65,8 @@ namespace SamaxLibrary.Sid
         /// bytes.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
-        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not contain a
-        /// valid SID message type.</exception>
-        /// TODO: Document exceptions thrown by the message constructors.
+        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not compose a
+        /// valid client-to-server SID message.</exception>
         public static SidMessage CreateClientToServerMessageFromBytes(byte[] messageBytes)
         {
             SidMessageType messageType = SidMessage.GetSidMessageType(messageBytes);
@@ -96,9 +95,8 @@ namespace SamaxLibrary.Sid
         /// bytes.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
-        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not contain a
-        /// valid SID message type.</exception>
-        /// TODO: Document exceptions thrown by the message constructors.
+        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not compose a
+        /// valid server-to-client SID message.</exception>
         public static SidMessage CreateServerToClientMessageFromBytes(byte[] messageBytes)
         {
             SidMessageType messageType = SidMessage.GetSidMessageType(messageBytes);

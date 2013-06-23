@@ -56,6 +56,7 @@
     <Compile Include="Sid\ProductID.cs" />
     <Compile Include="Sid\SidByteParser.cs" />
     <Compile Include="Sid\SidByteParserException.cs" />
+    <Compile Include="Sid\SidHeader.cs" />
     <Compile Include="Sid\SidMessage.cs" />
     <Compile Include="Sid\SidMessageFactory.cs" />
     <Compile Include="Sid\SidMessageType.cs" />

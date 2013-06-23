@@ -38,8 +38,28 @@ namespace SamaxLibrary.Sid
         /// </summary>
         /// <param name="messageBytes">The bytes that compose the SID message.</param>
         /// <param name="messageType">The SID message type of the SID message.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> is too small to
+        /// contain the SID header, or the SID header is invalid, or <paramref name="messageType"/>
+        /// does not match the SID message type in <paramref name="messageBytes"/>.</exception>
         public SidMessage(byte[] messageBytes, SidMessageType messageType) : base(messageBytes)
         {
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
+            SidHeader header = new SidHeader(messageBytes);
+            if (messageType != header.MessageType)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The specified SID message type ({0}) does not match the message type in the message bytes ({1}).",
+                        messageType,
+                        header.MessageType));
+            }
+
             this.messageType = messageType;
         }
 
@@ -53,9 +73,7 @@ namespace SamaxLibrary.Sid
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
         /// <exception cref="ArgumentException"><paramref name="messageBytes"/> is too small to
-        /// contain the SID message type, or the byte in <paramref name="messageBytes"/> that
-        /// corresponds to the SID message type does not represent a valid SID message type.
-        /// </exception>
+        /// contain the SID header, or the SID header is invalid.</exception>
         internal static SidMessageType GetSidMessageType(byte[] messageBytes)
         {
             if (messageBytes == null)
@@ -63,29 +81,8 @@ namespace SamaxLibrary.Sid
                 throw new ArgumentNullException("messageBytes");
             }
 
-            //// TODO: Validate the entire header (not just the message bytes) here
-
-            const int MessageTypeIndex = 1;
-            if (messageBytes.Length <= MessageTypeIndex)
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The length of the array ({0}) is too small to contain the SID message type.",
-                        messageBytes.Length),
-                    "messageBytes");
-            }
-
-            SidMessageType messageType = (SidMessageType)messageBytes[MessageTypeIndex];
-            if (!Enum.IsDefined(typeof(SidMessageType), messageType))
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The byte corresponding to the SID message type ({0}) does not represent a valid SID message type.",
-                        messageType),
-                    "messageBytes");
-            }
-
-            return messageType;
+            SidHeader header = new SidHeader(messageBytes);
+            return header.MessageType;
         }
     }
 }

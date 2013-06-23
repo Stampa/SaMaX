@@ -102,9 +102,11 @@ namespace SamaxLibrary.Sid
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthInfoClientToServerSidMessage"/> class.
         /// </summary>
-        /// <param name="messageBytes">An array of bytes that compose the message.</param>
+        /// <param name="messageBytes">An array of bytes that composes the message.</param>
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not represent
+        /// a valid client-to-server SID_AUTH_INFO message.</exception>
         public AuthInfoClientToServerSidMessage(byte[] messageBytes)
             : base(messageBytes, MessageType)
         {
