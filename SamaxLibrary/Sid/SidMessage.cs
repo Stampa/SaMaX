@@ -15,8 +15,11 @@ namespace SamaxLibrary.Sid
     /// This class represents a message of the SID protocol used in communication with some of
     /// the servers of Battle.Net.
     /// </summary>
-    /// <remarks>See <see cref="SidByteParser"/> for information about the byte-level
-    /// representation of SID messages.</remarks>
+    /// <remarks>
+    /// <para>A SID message consists of a header of fixed size (see
+    /// <see cref="SidHeader.HeaderLength"/>) and data of variable size.</para>
+    /// <para>For more information about the byte-level representation of SID messages, see
+    /// <see cref="SidByteParser"/>.</para></remarks>
     /// <seealso cref="SidByteParser"/>
     public abstract class SidMessage : Message
     {

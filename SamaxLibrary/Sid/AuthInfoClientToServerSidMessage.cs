@@ -9,6 +9,7 @@ namespace SamaxLibrary.Sid
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
 
@@ -151,6 +152,88 @@ namespace SamaxLibrary.Sid
             {
                 throw new ArgumentException("There were unexpected bytes at the end of the message.");
             }
+        }
+
+        /// <summary>
+        /// Creates an instance of the <see cref="AuthInfoClientToServerSidMessage"/> class from
+        /// high-level data.
+        /// </summary>
+        /// <param name="productID">The product ID.</param>
+        /// <param name="version">The version of the client.</param>
+        /// <param name="localIPAddress">An array of 4 bytes representing the local IP address.
+        /// The address is in network byte order, so the first byte is the most significant byte.
+        /// </param>
+        /// <returns>An instance of the <see cref="AuthInfoClientToServerSidMessage"/> class with the
+        /// specified data.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="localIPAddress"/> is
+        /// <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="productID"/> is not a constant of
+        /// the <see cref="ProductID"/> enumeration, or <paramref name="localIPAddress"/> is not of
+        /// length 4.</exception>
+        public static AuthInfoClientToServerSidMessage CreateFromHighLevelData(
+            ProductID productID,
+            Int32 version,
+            byte[] localIPAddress)
+        {
+            if (!Enum.IsDefined(typeof(ProductID), productID))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The specified product ID ({0}) is not a constant of the product ID enumeration.",
+                        productID));
+            }
+
+            //// TODO: Validate the version
+
+            if (localIPAddress.Length != 4)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The byte array representing the IP address is of invalid length ({0}).",
+                        localIPAddress.Length));
+            }
+
+            CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+            RegionInfo regionInfo = RegionInfo.CurrentRegion;
+
+            Int32 protocolID = 0;
+            PlatformID platformID = PlatformID.Ix86;
+
+            //// TODO: Get the actual langauge in a manner like this
+            ////string productLanguage = cultureInfo.TwoLetterISOLanguageName.ToLower() +
+                ////regionInfo.TwoLetterISORegionName;
+            string productLanguage = "enUS";
+
+            Int32 timeZoneBiasInMinutes = (Int32)(DateTime.UtcNow - DateTime.Now).TotalMinutes;
+            Int32 localeID = cultureInfo.LCID;
+            Int32 languageID = cultureInfo.LCID;
+            string countryAbbreviation = regionInfo.ThreeLetterISORegionName;
+            string country = regionInfo.EnglishName;
+
+            SidByteWriter writer = new SidByteWriter();
+            writer.AppendInt32(protocolID);
+            writer.AppendEnumAsDwordString(platformID);
+            writer.AppendEnumAsDwordString(productID);
+            writer.AppendInt32(version);
+            writer.AppendDwordString(productLanguage);
+            writer.AppendByteArray(localIPAddress);
+            writer.AppendInt32(timeZoneBiasInMinutes);
+            writer.AppendInt32(localeID);
+            writer.AppendInt32(languageID);
+            writer.AppendString(countryAbbreviation);
+            writer.AppendString(country);
+
+            byte[] dataBytes = writer.Bytes;
+            SidHeader header = new SidHeader(dataBytes, MessageType);
+            byte[] headerBytes = header.HeaderBytes;
+            
+            // TODO: Put this logic for combining header and data somewhere else
+            // SidHeader.GetMessageBytes maybe
+            byte[] messageBytes = new byte[headerBytes.Length + dataBytes.Length];
+            Array.Copy(headerBytes, 0, messageBytes, 0, headerBytes.Length);
+            Array.Copy(dataBytes, 0, messageBytes, headerBytes.Length, dataBytes.Length);
+
+            return new AuthInfoClientToServerSidMessage(messageBytes);
         }
     }
 }

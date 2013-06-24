@@ -13,7 +13,7 @@ namespace SamaxLibrary.Sid
     using MiscUtil.Conversion;
 
     /// <summary>
-    /// This class is used to parse the array of bytes that composes a SID message.
+    /// This class is used to parse the array of bytes that composes the data of a SID message.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -29,6 +29,7 @@ namespace SamaxLibrary.Sid
     ///     little-endian.
     /// </para>
     /// </remarks>
+    /// <seealso cref="SidByteWriter"/>
     public class SidByteParser
     {
         /// <summary>
