@@ -10,6 +10,7 @@ namespace SamaxLibrary.Sid
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
 
     /// <summary>
@@ -78,7 +79,10 @@ namespace SamaxLibrary.Sid
                     message = new AuthInfoClientToServerSidMessage(messageBytes);
                     break;
                 default:
-                    Debug.Fail(String.Format("Invalid SID message type for client-to-server message: {0}", messageType));
+                    Debug.Fail(
+                        String.Format(
+                            "Invalid SID message type for creating client-to-server message from bytes: {0}",
+                            messageType));
                     message = null;
                     break;
             }
@@ -108,12 +112,94 @@ namespace SamaxLibrary.Sid
                     message = new AuthInfoServerToClientSidMessage(messageBytes);
                     break;
                 default:
-                    Debug.Fail(String.Format("Invalid SID message type for server-to-client message: {0}", messageType));
+                    Debug.Fail(
+                        String.Format(
+                            "Invalid SID message type for creating server-to-client message from bytes: {0}",
+                            messageType));
                     message = null;
                     break;
             }
 
             return message;
+        }
+
+        /// <summary>
+        /// Creates and returns an instance of the <see cref="SidMessage"/> class representing a
+        /// client-to-server SID message of the specified type with the specified data.
+        /// </summary>
+        /// <param name="messageType">The SID message type of the SID message to create.</param>
+        /// <param name="highLevelData">The high-level data from which to construct the SID
+        /// message, or <c>null</c> if there is no high-level data.</param>
+        /// <returns>An instance of the <see cref="SidMessage"/> class with the specified type and
+        /// data.</returns>
+        /// <exception cref="ArgumentException"><paramref name="messageType"/> is not a member of
+        /// the <see cref="SidMessageType"/> enumeration, or <paramref name="highLevelData"/> does
+        /// not contain valid high-level data for messages of the specified SID message type.
+        /// </exception>
+        public static SidMessage CreateClientToServerMessageFromHighLevelData(
+            SidMessageType messageType,
+            object[] highLevelData)
+        {
+            if (!Enum.IsDefined(typeof(SidMessageType), messageType))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The specified message type ({0}) is not a constant of the SidMessageType enumeration.",
+                        messageType));
+            }
+
+            Type sidMessageClassType;
+            switch (messageType)
+            {
+                case SidMessageType.AuthInfo:
+                    sidMessageClassType = typeof(AuthInfoClientToServerSidMessage);
+                    break;
+                default:
+                    Debug.Fail(
+                        String.Format(
+                            "Invalid SID message type for creating client-to-server message from high-level data: {0}",
+                            messageType));
+                    sidMessageClassType = null;
+                    break;
+            }
+
+            MethodInfo createMethod = sidMessageClassType.GetMethod("CreateFromHighLevelData");
+
+            Debug.Assert(
+                createMethod != null,
+                String.Format("Could not find the method Create in the type {0}.", sidMessageClassType));
+
+            try
+            {
+                SidMessage message = (SidMessage)createMethod.Invoke(null, highLevelData);
+                return message;
+            }
+            catch (TargetParameterCountException ex)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The array of high-level data contains an invalid amount of data ({0}).",
+                        highLevelData.Length),
+                    ex);
+            }
+            catch (ArgumentException ex)
+            {
+                //// TODO: Figure out how to make String.Format list all the types
+                //// Possibly even list the expected types using reflection!
+                throw new ArgumentException(
+                    String.Format("The elements of the array of high-level data are of invalid type"),
+                    ex);
+            }
+            catch (TargetInvocationException ex)
+            {
+                //// TODO: Is it safe to assume that ex.InnerException is the exception thrown by
+                //// the SID message class?
+                throw new ArgumentException(
+                    String.Format(
+                        "The SID message constructor threw an exception: {0}",
+                        ex.InnerException.Message),
+                    ex);
+            }
         }
     }
 }
