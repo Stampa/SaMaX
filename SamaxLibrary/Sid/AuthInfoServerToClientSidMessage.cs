@@ -1,10 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="AuthInfoServerToClientSidMessage.cs" company="TODO">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
-
-namespace SamaxLibrary.Sid
+﻿namespace SamaxLibrary.Sid
 {
     using System;
     using System.Collections.Generic;

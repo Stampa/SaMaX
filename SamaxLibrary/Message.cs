@@ -1,10 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Message.cs" company="TODO">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
-
-namespace SamaxLibrary
+﻿namespace SamaxLibrary
 {
     using System;
     using System.Collections.Generic;
