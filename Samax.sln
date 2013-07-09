@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamaxLibrary", "SamaxLibrary\SamaxLibrary.csproj", "{A066DED8-7B61-4D9D-BA8C-4F068EA9272C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamaxLibraryTests", "SamaxLibraryTests\SamaxLibraryTests.csproj", "{6162EFD6-F4AF-4A8D-BC70-5FEED15D2C4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{A066DED8-7B61-4D9D-BA8C-4F068EA9272C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A066DED8-7B61-4D9D-BA8C-4F068EA9272C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A066DED8-7B61-4D9D-BA8C-4F068EA9272C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6162EFD6-F4AF-4A8D-BC70-5FEED15D2C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6162EFD6-F4AF-4A8D-BC70-5FEED15D2C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6162EFD6-F4AF-4A8D-BC70-5FEED15D2C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6162EFD6-F4AF-4A8D-BC70-5FEED15D2C4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
