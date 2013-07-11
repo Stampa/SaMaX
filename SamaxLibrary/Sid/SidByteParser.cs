@@ -66,7 +66,8 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="SidByteParser"/> class.
         /// </summary>
-        /// <param name="bytesToParse">The array of bytes to parse.</param>
+        /// <param name="bytesToParse">The array of bytes to parse, <em>including</em> the SID
+        /// header.</param>
         /// <exception cref="ArgumentNullException"><paramref name="bytesToParse"/> is <c>null</c>.
         /// </exception>
         /// <exception cref="ArgumentException"><paramref name="bytesToParse"/> is too small to
