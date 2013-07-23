@@ -144,9 +144,10 @@
             AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(5, true);
         }
 
+        [Test]
         public void ReadInt32AsEnum_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(4, false);
+            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(100000, true);
         }
 
         [TestCase(
