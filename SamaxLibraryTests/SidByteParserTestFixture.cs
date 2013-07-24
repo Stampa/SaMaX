@@ -12,6 +12,9 @@
         private const string OnlyTheFirstFourBytesShouldAffectTheResultDescription =
             "Only the first four bytes should affect the result.";
 
+        private const string OnlyTheFirstEightBytesShouldAffectTheResultDescription =
+            "Only the first eight bytes should affect the result.";
+
         private const string TheValueShouldBeReadInLittleEndianDescription =
             "The value should be read in little-endian.";
 
@@ -90,15 +93,19 @@
         [TestCase(
             0, 0, 0, 0x80,
             ExpectedResult = Int32.MinValue,
-            Description = "It should be possible to read the negative number of the greatest magnitude.")]
+            Description = "It should be possible to read negative values.")]
         [TestCase(
-            0, 0, 0, 0, (byte)1,
+            0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = 0,
             Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
         public Int32 ReadInt32(
-            byte firstByte, byte secondByte, byte thirdByte, byte fourthByte, params Byte[] remainingBytes)
+            byte byte1,
+            byte byte2,
+            byte byte3,
+            byte byte4,
+            params Byte[] remainingBytes)
         {
-            List<byte> dataBytes = new List<byte> { firstByte, secondByte, thirdByte, fourthByte };
+            List<byte> dataBytes = new List<byte> { byte1, byte2, byte3, byte4 };
             dataBytes.AddRange(remainingBytes);
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes.ToArray());
             return parser.ReadInt32();
@@ -135,19 +142,19 @@
         [Test]
         public void ReadInt32AsEnum_WhenJustEnoughDataBytes_ParserHasNoDataBytesToParse()
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(4, false);
+            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(4, false);
         }
 
         [Test]
         public void ReadInt32AsEnum_WhenJustEnoughDataBytesPlusOne_ParserHasDataBytesToParse()
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(5, true);
+            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(5, true);
         }
 
         [Test]
         public void ReadInt32AsEnum_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(100000, true);
+            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(100000, true);
         }
 
         [TestCase(
@@ -158,13 +165,80 @@
             0, 0, 0, 0, (byte)1,
             ExpectedResult = SidByteParserTestEnum.Member0,
             Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
+        [TestCase(
+            0, 0, 0, 0, (byte)0xFF,
+            ExpectedResult = SidByteParserTestEnum.Member0,
+            Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
         public SidByteParserTestEnum ReadInt32AsEnum_WhenEnumTypeIsTestEnum(
-            byte firstByte, byte secondByte, byte thirdByte, byte fourthByte, params byte[] remainingBytes)
+            byte byte1,
+            byte byte2,
+            byte byte3,
+            byte byte4,
+            params byte[] remainingBytes)
         {
-            List<byte> dataBytes = new List<byte> { firstByte, secondByte, thirdByte, fourthByte };
+            List<byte> dataBytes = new List<byte> { byte1, byte2, byte3, byte4 };
             dataBytes.AddRange(remainingBytes);
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes.ToArray());
             return parser.ReadInt32AsEnum<SidByteParserTestEnum>();
+        }
+
+        [Test]
+        public void ReadUInt64_WhenNoDataBytes_ThrowsSidByteParserException()
+        {
+            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(0);
+        }
+
+        [Test]
+        public void ReadUInt64_WhenJustTooFewDataBytes_ThrowsSidByteParserException()
+        {
+            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(7);
+        }
+
+        [Test]
+        public void ReadUInt64_WhenJustEnoughDataBytes_ParserHasNoDataBytesToParse()
+        {
+            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(8, false);
+        }
+
+        [Test]
+        public void ReadUInt64_WhenJustEnoughDataBytesPlusOne_ParserHasDataBytesToParse()
+        {
+            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(9, true);
+        }
+
+        [Test]
+        public void ReadUInt64_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
+        {
+            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(100000, true);
+        }
+
+        [TestCase(
+            1, 2, 3, 4, 5, 6, 7, 8,
+            ExpectedResult = 0x0807060504030201U,
+            Description = TheValueShouldBeReadInLittleEndianDescription)]
+        [TestCase(
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            ExpectedResult = UInt64.MaxValue,
+            Description = "It should be possible to read values that cannot be stored in a signed 64-bit integer.")]
+        [TestCase(
+            0, 0, 0, 0, 0, 0, 0, 0, (byte)0xFF,
+            ExpectedResult = 0,
+            Description = OnlyTheFirstEightBytesShouldAffectTheResultDescription)]
+        public UInt64 ReadUInt64(
+            byte byte1,
+            byte byte2,
+            byte byte3,
+            byte byte4,
+            byte byte5,
+            byte byte6,
+            byte byte7,
+            byte byte8,
+            params byte[] remainingBytes)
+        {
+            List<byte> dataBytes = new List<byte>() { byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8 };
+            dataBytes.AddRange(remainingBytes);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes.ToArray());
+            return parser.ReadUInt64();
         }
 
         private SidByteParser CreateSidByteParser(byte[] bytesToParse)
@@ -198,17 +272,12 @@
             Assert.That(parser.HasBytesToParse, constraint);
         }
 
-        private void AssertThat_ReadInt32_ThrowsException<T>(SidByteParser parser) where T : Exception
-        {
-            Assert.That(() => parser.ReadInt32(), Throws.InstanceOf<T>());
-        }
-
         private void AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsException<T>(
             int dataByteCount)
             where T : Exception
         {
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            AssertThat_ReadInt32_ThrowsException<T>(parser);
+            Assert.That(() => parser.ReadInt32(), Throws.InstanceOf<T>());
         }
 
         private void AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
@@ -242,13 +311,30 @@
             AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnum_ThrowsException<T>(parser);
         }
 
-        private void AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
+        private void AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(
             int dataByteCount, bool shouldHaveDataBytesToParse)
         {
             // Explicitness about the data bytes to make sure that there is an enum member matching the read value
             byte[] dataBytes = new byte[dataByteCount];
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
             parser.ReadInt32AsEnum<SidByteParserTestEnum>();
+            IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
+            Assert.That(parser.HasBytesToParse, constraint);
+        }
+
+        private void AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<T>(
+            int dataByteCount)
+            where T : Exception
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            Assert.That(() => parser.ReadUInt64(), Throws.InstanceOf<T>());
+        }
+
+        private void AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
+            int dataByteCount, bool shouldHaveDataBytesToParse)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            parser.ReadUInt64();
             IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
             Assert.That(parser.HasBytesToParse, constraint);
         }
