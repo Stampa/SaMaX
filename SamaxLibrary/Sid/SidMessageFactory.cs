@@ -64,6 +64,11 @@
         /// valid client-to-server SID message.</exception>
         public static SidMessage CreateClientToServerMessageFromBytes(byte[] messageBytes)
         {
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
             SidMessageType messageType = SidMessage.GetSidMessageType(messageBytes);
 
             SidMessage message;

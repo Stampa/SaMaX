@@ -169,6 +169,11 @@
             Int32 version,
             byte[] localIPAddress)
         {
+            if (localIPAddress == null)
+            {
+                throw new ArgumentNullException("localIPAddress");
+            }
+
             if (!Enum.IsDefined(typeof(ProductID), productID))
             {
                 throw new ArgumentException(

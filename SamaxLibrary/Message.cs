@@ -28,8 +28,15 @@
         /// Initializes a new instance of the <see cref="Message"/> class.
         /// </summary>
         /// <param name="messageBytes">The bytes that compose the message.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
+        /// </exception>
         public Message(byte[] messageBytes)
         {
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
             this.bytes = new ReadOnlyCollection<byte>(messageBytes);
         }
     }

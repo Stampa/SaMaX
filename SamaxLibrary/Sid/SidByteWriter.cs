@@ -59,11 +59,18 @@
         /// Appends an enumeration value interpreted as a dword string to the bytes.
         /// </summary>
         /// <param name="value">The enumeration value to append to the bytes.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
+        /// </exception>
         /// <exception cref="ArgumentException"><paramref name="value"/> is not a constant in its
         /// enumeration, or the string representation of <paramref name="value"/> is not of length
         /// 4.</exception>
         public void AppendEnumAsDwordString(Enum value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
             Type enumType = value.GetType();
             if (!Enum.IsDefined(enumType, value))
             {

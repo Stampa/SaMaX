@@ -192,6 +192,11 @@
         /// <see cref="UInt16.MaxValue"/>.</exception>
         public SidHeader(byte[] dataBytes, SidMessageType messageType)
         {
+            if (dataBytes == null)
+            {
+                throw new ArgumentNullException("dataBytes");
+            }
+
             if (!Enum.IsDefined(typeof(SidMessageType), messageType))
             {
                 throw new ArgumentException(
