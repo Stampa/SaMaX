@@ -31,8 +31,13 @@
       <DocumentationSource sourceFile="Samax.sln" xmlns="" />
     </DocumentationSources>
     <ApiFilter>
-      <Filter entryType="Namespace" fullName="SamaxLibraryTests" isExposed="False" xmlns="" />
-    </ApiFilter>
+      <Filter entryType="Namespace" fullName="SamaxLibrary.Sid" isExposed="True">
+  <Filter entryType="Class" fullName="SamaxLibrary.Sid.SidByteParser" filterName="SidByteParser" isExposed="True">
+    <Filter entryType="Method" fullName="SamaxLibrary.Sid.SidByteParser.$InvariantMethod$" filterName="$InvariantMethod$" isExposed="False" />
+    <Filter entryType="Field" fullName="SamaxLibrary.Sid.SidByteParser.$evaluatingInvariant$" filterName="$evaluatingInvariant$" isExposed="False" />
+  </Filter>
+</Filter>
+<Filter entryType="Namespace" fullName="SamaxLibraryTests" isExposed="False" /></ApiFilter>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in

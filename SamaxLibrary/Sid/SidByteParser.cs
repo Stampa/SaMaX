@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Text;
     using MiscUtil.Conversion;
@@ -55,10 +57,13 @@
         /// <summary>
         /// Gets the amount of bytes left to parse.
         /// </summary>
+        /// TODO: Consider making this public.
         private int AmountOfBytesLeft
         {
             get
             {
+                Contract.Ensures(Contract.Result<int>() >= 0);
+                Contract.Ensures(Contract.Result<int>() <= this.bytes.Length);
                 return this.bytes.Length - this.index;
             }
         }
@@ -101,6 +106,8 @@
         public Int32 ReadInt32()
         {
             const int AmountOfBytesToRead = 4;
+            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
                 throw new SidByteParserException(
@@ -129,14 +136,15 @@
         public T ReadInt32AsEnum<T>()
             where T : struct, IComparable, IConvertible, IFormattable
         {
-            Type enumType = typeof(T);
+            const int AmountOfBytesToRead = 4;
+            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
 
+            Type enumType = typeof(T);
             if (!enumType.IsEnum)
             {
                 throw new ArgumentException("The type parameter is not an enumeration type.", "T");
             }
 
-            // TODO: What if there is more than one constant for the value?
             Int32 value = this.ReadInt32();
             T enumValue = (T)Enum.ToObject(enumType, value);
 
@@ -161,6 +169,8 @@
         public UInt64 ReadUInt64()
         {
             const int AmountOfBytesToRead = 8;
+            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
                 throw new SidByteParserException(
@@ -187,6 +197,8 @@
         /// bytes left in the array of bytes to parse.</exception>
         public byte[] ReadByteArray(int count)
         {
+            this.EnsuresIndexFieldIncreasedBy(count);
+
             if (count < 0)
             {
                 throw new ArgumentOutOfRangeException("count");
@@ -246,6 +258,8 @@
         public string ReadDwordString()
         {
             const int AmountOfBytesToRead = 4;
+            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
                 throw new SidByteParserException(
@@ -259,6 +273,9 @@
             //// TODO: Make sure that the array does not contain any non-ASCII symbol?
             //// Can the GetString method throw any exception?
             string returnValue = Encoding.ASCII.GetString(stringBytes);
+            Debug.Assert(
+                returnValue.Length == 4,
+                "Decoded 4 bytes into an ASCII string that was not of length 4.");
 
             return returnValue;
         }
@@ -277,8 +294,10 @@
         public T ReadDwordStringAsEnum<T>()
             where T : struct, IComparable, IConvertible, IFormattable
         {
-            Type enumType = typeof(T);
+            const int AmountOfBytesToRead = 4;
+            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
 
+            Type enumType = typeof(T);
             if (!enumType.IsEnum)
             {
                 throw new ArgumentException("The type parameter is not an enumeration type.", "T");
@@ -300,6 +319,37 @@
                         enumType),
                     ex);
             }
+        }
+
+        /// <summary>
+        /// Contains the object invariants for the <see cref="SidByteParser"/> class.
+        /// </summary>
+        [ContractInvariantMethod]
+        private void SidByteParserInvariants()
+        {
+            Contract.Invariant(this.bytes != null);
+            Contract.Invariant(this.converter != null);
+
+            Contract.Invariant(this.index >= 0);
+            Contract.Invariant(this.index <= this.bytes.Length);
+
+            // If there are bytes to parse, the index is valid for the bytes array field.
+            // Otherwise, the index is just outside the valid range (like C++ iterators
+            // (for arrays at least)).
+            Contract.Invariant(
+                (this.HasBytesToParse && this.index < this.bytes.Length) ||
+                (!this.HasBytesToParse && this.index == this.bytes.Length));
+        }
+
+        /// <summary>
+        /// Ensures that <see cref="index"/> is increased by a specified value.
+        /// </summary>
+        /// <param name="value">The value by which <see cref="index"/> is ensured to be
+        /// increased.</param>
+        [ContractAbbreviator]
+        private void EnsuresIndexFieldIncreasedBy(int value)
+        {
+            Contract.Ensures(this.index == Contract.OldValue<int>(this.index) + value);
         }
     }
 }

@@ -114,8 +114,10 @@
             // Non-ASCII symbols seem to turn into question marks (value 63)
             // Validate that it consists of only 4 bytes (with an exception, not just an assert)?
             byte[] bytesToAppend = Encoding.ASCII.GetBytes(value);
+            Debug.Assert(
+                bytesToAppend.Length == 4,
+                "Encoded 4-character ASCII string into a byte array that was not of length 4.");
             Array.Reverse(bytesToAppend); // Go from big-endian to little-endian
-            Debug.Assert(bytesToAppend.Length == 4, "Dword strings are of length 4.");
             this.bytes.AddRange(bytesToAppend);
         }
 
