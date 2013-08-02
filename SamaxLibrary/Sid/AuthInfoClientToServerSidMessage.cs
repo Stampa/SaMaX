@@ -142,7 +142,7 @@
                     ex);
             }
 
-            if (parser.HasBytesToParse)
+            if (parser.HasBytesLeft)
             {
                 throw new ArgumentException("There were unexpected bytes at the end of the message.");
             }

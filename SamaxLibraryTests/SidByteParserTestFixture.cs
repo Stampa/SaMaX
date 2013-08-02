@@ -6,6 +6,13 @@
     using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
 
+    /* Notes:
+     * DataByteCount in method names and whatnot might refer to either the dataByteCount
+     * parameter or the AmountOfBytesLeft of the parser. These values are always the same anyway.
+     * 
+     * The HasBytesLeft property is checked in the tests for ReadInt32 but not the other methods.
+     */
+
     [TestFixture]
     public class SidByteParserTestFixture
     {
@@ -17,6 +24,9 @@
 
         private const string TheValueShouldBeReadInLittleEndianDescription =
             "The value should be read in little-endian.";
+
+        private const string BoundaryCase = "Boundary case.";
+        private const string TypicalCase = "Typical case.";
 
         [Test]
         public void Constructor_WhenBytesIsNull_ThrowsArgumentNullException()
@@ -38,52 +48,63 @@
             AssertThat_Constructor_ThrowsException<ArgumentException>(bytes);
         }
 
-        [Test]
-        public void Constructor_WhenBytesIsJustLargeEnough_ParserHasNoDataBytesToParse()
+        [TestCase(0, Description = "Boundary case.")]
+        [TestCase(1, Description = "Boundary case.")]
+        [TestCase(20, Description = "Typical case.")]
+        public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasSpecifiedAmountOfBytesLeft(
+            int dataByteCount)
         {
-            AssertThat_Constructor_WithSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(0, false);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(dataByteCount));
         }
 
-        [Test]
-        public void Constructor_WhenBytesIsJustLargeEnoughPlusOne_ParserHasDataBytesToParse()
+        [TestCase(0, Description = "Boundary case.")]
+        [TestCase(1, Description = "Boundary case.")]
+        [TestCase(20, Description = "Typical case´.")]
+        public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot0(
+            int dataByteCount)
         {
-            AssertThat_Constructor_WithSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(1, true);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            IResolveConstraint fulfillsConstraint = dataByteCount != 0 ?
+                (IResolveConstraint)Is.True : Is.False;
+            Assert.That(parser.HasBytesLeft, fulfillsConstraint);
         }
 
-        [Test]
-        public void Constructor_WhenBytesIsVeryLarge_ParserHasDataBytesToParse()
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(4 - 1, Description = BoundaryCase)]
+        [TestCase(4, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
+            int dataByteCount)
         {
-            AssertThat_Constructor_WithSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(10000, true);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadInt32(), fulfillsConstraint);
         }
 
-        [Test]
-        public void ReadInt32_WhenNoDataBytes_ThrowsSidByteParserException()
+        [TestCase(4, Description = BoundaryCase)]
+        [TestCase(5, Description = BoundaryCase)]
+        [TestCase(20, Description = BoundaryCase)]
+        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot4(
+            int dataByteCount)
         {
-            AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(0);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft != 4 ?
+                (IResolveConstraint)Is.True : Is.False;
+            parser.ReadInt32();
+            Assert.That(parser.HasBytesLeft, fulfillsConstraint);
         }
 
-        [Test]
-        public void ReadInt32_WhenJustTooFewDataBytes_ThrowsSidByteParserException()
+        [TestCase(4, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy4(
+            int dataByteCount)
         {
-            AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(3);
-        }
-
-        [Test]
-        public void ReadInt32_WhenJustEnoughDataBytes_ParserHasNoDataBytesToParse()
-        {
-            AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(4, false);
-        }
-
-        [Test]
-        public void ReadInt32_WhenJustEnoughDataBytesPlusOne_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(5, true);
-        }
-
-        [Test]
-        public void ReadInt32_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(100000, true);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadInt32();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
         }
 
         [TestCase(
@@ -103,7 +124,7 @@
             byte byte2,
             byte byte3,
             byte byte4,
-            params Byte[] remainingBytes)
+            params byte[] remainingBytes)
         {
             List<byte> dataBytes = new List<byte> { byte1, byte2, byte3, byte4 };
             dataBytes.AddRange(remainingBytes);
@@ -114,20 +135,21 @@
         [Test]
         public void ReadInt32AsEnum_WhenTypeParameterIsNotAnEnumerationType_ThrowsArgumentException()
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(4);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(20);
             Assert.That(() => parser.ReadInt32AsEnum<Int64>(), Throws.ArgumentException);
         }
 
-        [Test]
-        public void ReadInt32AsEnum_WhenNoDataBytes_ThrowsSidByteParserException()
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(4 - 1, Description = BoundaryCase)]
+        [TestCase(4, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
+            int dataByteCount)
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(0);
-        }
-
-        [Test]
-        public void ReadInt32AsEnum_WhenJustTooFewDataBytes_ThrowsSidByteParserException()
-        {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(3);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadInt32AsEnum<SidByteParserTestEnum>(), fulfillsConstraint);
         }
 
         [Test]
@@ -139,22 +161,15 @@
                 Throws.InstanceOf<SidByteParserException>());
         }
 
-        [Test]
-        public void ReadInt32AsEnum_WhenJustEnoughDataBytes_ParserHasNoDataBytesToParse()
+        [TestCase(4, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_DecreasesBytesLeftBy4(
+            int dataByteCount)
         {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(4, false);
-        }
-
-        [Test]
-        public void ReadInt32AsEnum_WhenJustEnoughDataBytesPlusOne_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(5, true);
-        }
-
-        [Test]
-        public void ReadInt32AsEnum_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(100000, true);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadInt32AsEnum<SidByteParserTestEnum>();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
         }
 
         [TestCase(
@@ -182,34 +197,28 @@
             return parser.ReadInt32AsEnum<SidByteParserTestEnum>();
         }
 
-        [Test]
-        public void ReadUInt64_WhenNoDataBytes_ThrowsSidByteParserException()
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(8 - 1, Description = BoundaryCase)]
+        [TestCase(8, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan8(
+            int dataByteCount)
         {
-            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(0);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 8 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadUInt64(), fulfillsConstraint);
         }
 
-        [Test]
-        public void ReadUInt64_WhenJustTooFewDataBytes_ThrowsSidByteParserException()
+        [TestCase(8, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy8(
+            int dataByteCount)
         {
-            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<SidByteParserException>(7);
-        }
-
-        [Test]
-        public void ReadUInt64_WhenJustEnoughDataBytes_ParserHasNoDataBytesToParse()
-        {
-            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(8, false);
-        }
-
-        [Test]
-        public void ReadUInt64_WhenJustEnoughDataBytesPlusOne_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(9, true);
-        }
-
-        [Test]
-        public void ReadUInt64_WhenLotsOfDataBytes_ParserHasDataBytesToParse()
-        {
-            AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(100000, true);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadUInt64();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 8));
         }
 
         [TestCase(
@@ -248,8 +257,13 @@
 
         private SidByteParser CreateSidByteParserWithSpecifiedDataByteCount(int dataByteCount)
         {
-            byte[] bytes = new byte[SidHeader.HeaderLength + dataByteCount];
-            return CreateSidByteParser(bytes);
+            return CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+        }
+
+        private SidByteParser CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(int dataByteCount)
+        {
+            byte[] bytes = new byte[dataByteCount];
+            return CreateSidByteParserWithSpecifiedDataBytes(bytes);
         }
 
         private SidByteParser CreateSidByteParserWithSpecifiedDataBytes(params byte[] dataBytes)
@@ -262,81 +276,6 @@
         private void AssertThat_Constructor_ThrowsException<T>(byte[] bytes) where T : Exception
         {
             Assert.That(() => CreateSidByteParser(bytes), Throws.InstanceOf<T>());
-        }
-
-        private void AssertThat_Constructor_WithSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
-            int dataByteCount, bool shouldHaveDataBytesToParse)
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
-            Assert.That(parser.HasBytesToParse, constraint);
-        }
-
-        private void AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsException<T>(
-            int dataByteCount)
-            where T : Exception
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            Assert.That(() => parser.ReadInt32(), Throws.InstanceOf<T>());
-        }
-
-        private void AssertThat_ReadInt32_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
-            int dataByteCount, bool shouldHaveDataBytesToParse)
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            parser.ReadInt32();
-            IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
-            Assert.That(parser.HasBytesToParse, constraint);
-        }
-
-        private void AssertThat_ReadInt32AsEnum_ThrowsException<TEnum, TException>(SidByteParser parser)
-            where TEnum : struct, IComparable, IConvertible, IFormattable
-            where TException : Exception
-        {
-            Assert.That(() => parser.ReadInt32AsEnum<TEnum>(), Throws.InstanceOf<TException>());
-        }
-
-        private void AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnum_ThrowsException<T>(
-            SidByteParser parser)
-            where T : Exception
-        {
-            AssertThat_ReadInt32AsEnum_ThrowsException<SidByteParserTestEnum, T>(parser);
-        }
-
-        private void AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedDataByteCount_ThrowsException<T>(
-            int dataByteCount)
-            where T : Exception
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnum_ThrowsException<T>(parser);
-        }
-
-        private void AssertThat_ReadInt32AsEnum_WhenEnumTypeIsTestEnumAndParserHasSpecifiedCountOfZeroBytes_HasOrHasNotDataBytesToParse(
-            int dataByteCount, bool shouldHaveDataBytesToParse)
-        {
-            // Explicitness about the data bytes to make sure that there is an enum member matching the read value
-            byte[] dataBytes = new byte[dataByteCount];
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
-            parser.ReadInt32AsEnum<SidByteParserTestEnum>();
-            IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
-            Assert.That(parser.HasBytesToParse, constraint);
-        }
-
-        private void AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsException<T>(
-            int dataByteCount)
-            where T : Exception
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            Assert.That(() => parser.ReadUInt64(), Throws.InstanceOf<T>());
-        }
-
-        private void AssertThat_ReadUInt64_WhenParserHasSpecifiedDataByteCount_HasOrHasNotDataBytesToParse(
-            int dataByteCount, bool shouldHaveDataBytesToParse)
-        {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
-            parser.ReadUInt64();
-            IResolveConstraint constraint = shouldHaveDataBytesToParse ? (IResolveConstraint)Is.True : Is.False;
-            Assert.That(parser.HasBytesToParse, constraint);
         }
     }
 }

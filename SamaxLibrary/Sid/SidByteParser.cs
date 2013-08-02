@@ -46,7 +46,7 @@
         /// <summary>
         /// Gets a value indicating whether there are any bytes left to parse.
         /// </summary>
-        public bool HasBytesToParse
+        public bool HasBytesLeft
         {
             get
             {
@@ -57,8 +57,7 @@
         /// <summary>
         /// Gets the amount of bytes left to parse.
         /// </summary>
-        /// TODO: Consider making this public.
-        private int AmountOfBytesLeft
+        public int AmountOfBytesLeft
         {
             get
             {
@@ -337,8 +336,8 @@
             // Otherwise, the index is just outside the valid range (like C++ iterators
             // (for arrays at least)).
             Contract.Invariant(
-                (this.HasBytesToParse && this.index < this.bytes.Length) ||
-                (!this.HasBytesToParse && this.index == this.bytes.Length));
+                (this.HasBytesLeft && this.index < this.bytes.Length) ||
+                (!this.HasBytesLeft && this.index == this.bytes.Length));
         }
 
         /// <summary>
