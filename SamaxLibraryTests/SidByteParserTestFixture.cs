@@ -54,7 +54,7 @@
         [TestCase(0, Description = "Boundary case.")]
         [TestCase(1, Description = "Boundary case.")]
         [TestCase(20, Description = "Typical case.")]
-        public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasSpecifiedAmountOfBytesLeft(
+        public void Constructor_ParserHasSpecifiedAmountOfBytesLeft(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -64,7 +64,7 @@
         [TestCase(0, Description = "Boundary case.")]
         [TestCase(1, Description = "Boundary case.")]
         [TestCase(20, Description = "Typical case´.")]
-        public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot0(
+        public void Constructor_ParserHasBytesLeft_IffDataByteCountIsNot0(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -77,7 +77,7 @@
         [TestCase(4 - 1, Description = BoundaryCase)]
         [TestCase(4, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
+        public void ReadInt32_ThrowsSidByteParserException_IffDataByteCountIsLessThan4(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -89,7 +89,7 @@
         [TestCase(4, Description = BoundaryCase)]
         [TestCase(5, Description = BoundaryCase)]
         [TestCase(20, Description = BoundaryCase)]
-        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot4(
+        public void ReadInt32_ParserHasBytesLeft_IffDataByteCountIsNot4(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -101,7 +101,7 @@
 
         [TestCase(4, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadInt32_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy4(
+        public void ReadInt32_DecreasesBytesLeftBy4(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -122,7 +122,7 @@
             0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = 0,
             Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
-        public Int32 ReadInt32(
+        public Int32 ReadInt32( // Hehe, hidden method name here :)
             byte byte1,
             byte byte2,
             byte byte3,
@@ -146,7 +146,7 @@
         [TestCase(4 - 1, Description = BoundaryCase)]
         [TestCase(4, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
+        public void ReadInt32AsEnum_WithZeroedDataBytes_ThrowsSidByteParserException_IffDataByteCountIsLessThan4(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
@@ -166,7 +166,7 @@
 
         [TestCase(4, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_DecreasesBytesLeftBy4(
+        public void ReadInt32AsEnum_DecreasesBytesLeftBy4(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
@@ -204,7 +204,7 @@
         [TestCase(8 - 1, Description = BoundaryCase)]
         [TestCase(8, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan8(
+        public void ReadUInt64_ThrowsSidByteParserException_IffDataByteCountIsLessThan8(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -215,7 +215,7 @@
 
         [TestCase(8, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy8(
+        public void ReadUInt64_DecreasesBytesLeftBy8(
             int dataByteCount)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
@@ -259,7 +259,7 @@
         [TestCase(0, Description = BoundaryCase)]
         [TestCase(1, Description = BoundaryCase)]
         [TestCase(20, Description = TypicalCase)]
-        public void ReadByteArray_WhenCountIsAsSpecified_ThrowsArgumentOutOfRangeExceptionIffCountIsLessThan0(
+        public void ReadByteArray_ThrowsArgumentOutOfRangeException_IffCountIsLessThan0(
             int count)
         {
             SidByteParser parser = CreateSidByteParserWithRandomDataBytes(50);
@@ -269,7 +269,7 @@
         }
 
         [TestCase(40, 20, Description = TypicalCase)]
-        public void ReadByteArray_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffCountIsGreaterThanDataByteCount(
+        public void ReadByteArray_ThrowsSidByteParserException_IffCountIsGreaterThanDataByteCount(
             [Values(0, 1, 20)] int dataByteCount,
             [Values(0, 1, 20)] int count)
         {
