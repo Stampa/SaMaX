@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using NUnit.Framework;
+    using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
 
     /* Notes:
@@ -15,6 +16,7 @@
     {
         private const string BoundaryCase = "Boundary case.";
         private const string TypicalCase = "Typical case.";
+        private const string NonboundaryCase = "Nonboundary case (but not typical).";
 
         private const string TheValueShouldBeWrittenInLittleEndian =
             "The value should be written in little-endian.";
@@ -31,7 +33,7 @@
         [TestCase(20, Description = BoundaryCase)]
         public void AppendInt32_IncreasesDataByteCountBy4(int dataByteCount)
         {
-            SidByteWriter writer = CreateSidByteWriterWithZeroedDataBytes(dataByteCount);
+            SidByteWriter writer = CreateSidByteWriterWithRandomDataBytes(dataByteCount);
             int oldAmountOfBytes = writer.Bytes.Length;
             writer.AppendInt32(0);
             Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + 4));
@@ -56,11 +58,52 @@
             Int32.MinValue,
             new byte[4] { 0, 0, 0, 0x80 },
             Description = "It should be possible to write negative values.")]
-        public void AppendInt32_AppendsSpecifiedBytes(
-            Int32 value, params byte[] bytes)
+        public void AppendInt32_AppendsSpecifiedBytes(Int32 value, params byte[] bytes)
         {
             SidByteWriter writer = CreateSidByteWriter();
             writer.AppendInt32(value);
+            Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
+        }
+
+        [Test]
+        public void AppendDwordString_WhenStringIsNull_ThrowsArgumentNullException()
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            Assert.That(() => writer.AppendDwordString(null), Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [TestCase("", Description = BoundaryCase)]
+        [TestCase("Abc", Description = BoundaryCase)]
+        [TestCase("1234", Description = BoundaryCase)]
+        [TestCase("Qwert", Description = BoundaryCase)]
+        [TestCase("The raven flew down the avenue.", Description = NonboundaryCase)]
+        public void AppendDwordString_ThrowsArgumentException_IffStringLengthIsNot4(string dwordString)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            IResolveConstraint fulfillsConstraint = dwordString.Length != 4 ?
+                (IResolveConstraint)Throws.ArgumentException : Throws.Nothing;
+            Assert.That(() => writer.AppendDwordString(dwordString), fulfillsConstraint);
+        }
+
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(1, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void AppendDwordString_IncreasesDataByteCountBy4(int dataByteCount)
+        {
+            SidByteWriter writer = CreateSidByteWriterWithRandomDataBytes(dataByteCount);
+            int oldAmountOfBytes = writer.Bytes.Length;
+            writer.AppendDwordString("Ab3W");
+            Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + 4));
+        }
+
+        [TestCase(
+            "ABCD",
+            new byte[] { 0x44, 0x43, 0x42, 0x41 },
+            Description = TheValueShouldBeWrittenInLittleEndian)]
+        public void AppendDwordString_AppendsSpecifiedBytes(string dwordString, params byte[] bytes)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            writer.AppendDwordString(dwordString);
             Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
         }
 
@@ -74,12 +117,6 @@
         private SidByteWriter CreateSidByteWriter()
         {
             return new SidByteWriter();
-        }
-
-        private SidByteWriter CreateSidByteWriterWithZeroedDataBytes(int dataByteCount)
-        {
-            byte[] dataBytes = new byte[dataByteCount];
-            return CreateSidByteWriterWithSpecifiedDataBytes(dataBytes);
         }
 
         private SidByteWriter CreateSidByteWriterWithRandomDataBytes(int dataByteCount)

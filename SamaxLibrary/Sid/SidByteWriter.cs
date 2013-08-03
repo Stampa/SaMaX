@@ -12,7 +12,7 @@
     /// This class is used to construct an array of bytes that composes the data of a SID
     /// message. The array is constructed from high-level data.
     /// </summary>
-    /// <see cref="SidByteParser"/>
+    /// <seealso cref="SidByteParser"/>
     public class SidByteWriter
     {
         /// <summary>
@@ -59,38 +59,6 @@
         }
 
         /// <summary>
-        /// Appends an enumeration value interpreted as a dword string to the bytes.
-        /// </summary>
-        /// <param name="value">The enumeration value to append to the bytes.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
-        /// </exception>
-        /// <exception cref="ArgumentException"><paramref name="value"/> is not a constant in its
-        /// enumeration, or the string representation of <paramref name="value"/> is not of length
-        /// 4.</exception>
-        public void AppendEnumAsDwordString(Enum value)
-        {
-            this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
-
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            Type enumType = value.GetType();
-            if (!Enum.IsDefined(enumType, value))
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The enumeration value to append ({0}) is not a constant of the enumeration ({1}).",
-                        value,
-                        enumType));
-            }
-
-            string valueString = value.ToString().ToUpper();
-            this.AppendDwordString(valueString);
-        }
-
-        /// <summary>
         /// Appends a dword string to the bytes.
         /// </summary>
         /// <param name="value">The string to append to the bytes.</param>
@@ -126,6 +94,38 @@
                 "Encoded 4-character ASCII string into a byte array that was not of length 4.");
             Array.Reverse(bytesToAppend); // Go from big-endian to little-endian
             this.bytes.AddRange(bytesToAppend);
+        }
+
+        /// <summary>
+        /// Appends an enumeration value interpreted as a dword string to the bytes.
+        /// </summary>
+        /// <param name="value">The enumeration value to append to the bytes.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="value"/> is not a constant in its
+        /// enumeration, or the string representation of <paramref name="value"/> is not of length
+        /// 4.</exception>
+        public void AppendEnumAsDwordString(Enum value)
+        {
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
+
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            Type enumType = value.GetType();
+            if (!Enum.IsDefined(enumType, value))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The enumeration value to append ({0}) is not a constant of the enumeration ({1}).",
+                        value,
+                        enumType));
+            }
+
+            string valueString = value.ToString().ToUpper();
+            this.AppendDwordString(valueString);
         }
 
         /// <summary>
