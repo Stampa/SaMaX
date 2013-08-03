@@ -107,6 +107,17 @@
             Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + 4));
         }
 
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(1, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void AppendDwordString_DoesNotAffectOriginalDataBytes(int dataByteCount)
+        {
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            SidByteWriter writer = CreateSidByteWriterWithSpecifiedDataBytes(dataBytes);
+            writer.AppendDwordString("Aceg");
+            Assert.That(writer.Bytes.Take(dataByteCount), Is.EqualTo(dataBytes));
+        }
+
         [TestCase(
             "ABCD",
             new byte[] { 0x44, 0x43, 0x42, 0x41 },
@@ -160,6 +171,17 @@
             Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + 4));
         }
 
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(1, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void AppendEnumAsDwordString_DoesNotAffectOriginalDataBytes(int dataByteCount)
+        {
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            SidByteWriter writer = CreateSidByteWriterWithSpecifiedDataBytes(dataBytes);
+            writer.AppendEnumAsDwordString(SidByteParserAndWriterTestEnum.Ha1O);
+            Assert.That(writer.Bytes.Take(dataByteCount), Is.EqualTo(dataBytes));
+        }
+
         private IEnumerable<TestCaseData> AppendEnumAsDwordStringTestSource()
         {
             // Relying on this to work "as expected" might be bad.
@@ -206,13 +228,23 @@
             Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + asciiString.Length + 1));
         }
 
+        public void AppendAsciiString_DoesNotAffectOriginalDataBytes(
+            [Values(0, 1, 20)] int dataByteCount,
+            [Values("", "Q", "Dodecahedron")] string asciiString)
+        {
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            SidByteWriter writer = CreateSidByteWriterWithSpecifiedDataBytes(dataBytes);
+            writer.AppendAsciiString(asciiString);
+            Assert.That(writer.Bytes.Take(dataByteCount), Is.EqualTo(dataBytes));
+        }
+
         private IEnumerable<TestCaseData> AppendAsciiStringDataSource()
         {
             yield return new TestCaseData(String.Empty, new byte[] { 0 })
                 .SetDescription(BoundaryCase);
             yield return new TestCaseData("J", new byte[] { 0x4A, 0 })
                 .SetDescription(BoundaryCase);
-            
+
             Encoding ascii = Encoding.ASCII;
             string asciiString = "Onomatopoeia";
             List<byte> byteList = ascii.GetBytes(asciiString).ToList();
