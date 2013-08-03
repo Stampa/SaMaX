@@ -11,6 +11,15 @@
     /* Notes:
      * Most helper methods for creating a SidByteWriter relies on SidByteWriter.AppendByteArray to
      * work properly.
+     * 
+     * Some tests rely on Encoding.ASCII to work "as expected".
+     */
+
+    /* TODO:
+     * It's unclear exactly what kind of strings the string methods should accept.
+     * Anything but alphanumeric characters? Nonprintable characters? Whitespace characters?
+     * Null terminators (probably not)? Non-ASCII (> 255, > 127)?
+     * Figure this out and add unit tests for them!
      */
 
     [TestFixture]
@@ -153,7 +162,7 @@
 
         private IEnumerable<TestCaseData> AppendEnumAsDwordStringTestSource()
         {
-            // Relying on this to work "as expected" might be a little bad.
+            // Relying on this to work "as expected" might be bad.
             Encoding ascii = Encoding.ASCII;
 
             yield return new TestCaseData(
@@ -176,6 +185,49 @@
         {
             SidByteWriter writer = CreateSidByteWriter();
             writer.AppendEnumAsDwordString(enumValue);
+            Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
+        }
+
+        [Test]
+        public void AppendAsciiString_WhenStringIsNull_ThrowsArgumentNullException()
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            Assert.That(() => writer.AppendAsciiString(null), Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void AppendAsciiString_IncreasesDataByteCountByStringLengthPlusOne(
+            [Values(0, 1, 20)] int dataByteCount,
+            [Values("", "S", "laughter")] string asciiString)
+        {
+            SidByteWriter writer = CreateSidByteWriterWithRandomDataBytes(dataByteCount);
+            int oldAmountOfBytes = writer.Bytes.Length;
+            writer.AppendAsciiString(asciiString);
+            Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + asciiString.Length + 1));
+        }
+
+        private IEnumerable<TestCaseData> AppendAsciiStringDataSource()
+        {
+            yield return new TestCaseData(String.Empty, new byte[] { 0 })
+                .SetDescription(BoundaryCase);
+            yield return new TestCaseData("J", new byte[] { 0x4A, 0 })
+                .SetDescription(BoundaryCase);
+            
+            Encoding ascii = Encoding.ASCII;
+            string asciiString = "Onomatopoeia";
+            List<byte> byteList = ascii.GetBytes(asciiString).ToList();
+            byteList.Add(0);
+            yield return new TestCaseData(asciiString, byteList.ToArray())
+                .SetDescription(TypicalCase);
+        }
+
+        [TestCaseSource("AppendAsciiStringDataSource")]
+        public void AppendAsciiString_AppendsSpecifiedBytes(
+            string asciiString,
+            params byte[] bytes)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            writer.AppendAsciiString(asciiString);
             Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
         }
 

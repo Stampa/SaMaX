@@ -129,12 +129,13 @@
         }
 
         /// <summary>
-        /// Appends a string to the bytes.
+        /// Appends an ASCII string to the bytes.
         /// </summary>
         /// <param name="value">The string to append to the bytes.</param>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
         /// </exception>
-        /// <remarks>A null terminator is appended as well.</remarks>
+        /// <remarks>A null terminator is appended as well, even if the string already has a null
+        /// terminator.</remarks>
         public void AppendAsciiString(string value)
         {
             if (value == null)

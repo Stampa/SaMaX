@@ -14,6 +14,15 @@
      * parameter or the AmountOfBytesLeft of the parser. These values are always the same anyway.
      * 
      * The HasBytesLeft property is checked in the tests for ReadInt32 but not the other methods.
+     * 
+     * Some tests rely on Encoding.ASCII to work "as expected".
+     */
+
+    /* TODO:
+     * It's unclear exactly what kind of strings the string methods should accept.
+     * Anything but alphanumeric characters? Nonprintable characters? Whitespace characters?
+     * Non-ASCII (> 127)?!
+     * Figure this out and add unit tests for them!
      */
 
     [TestFixture]
