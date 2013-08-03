@@ -219,8 +219,8 @@
             writer.AppendInt32(timeZoneBiasInMinutes);
             writer.AppendInt32(localeID);
             writer.AppendInt32(languageID);
-            writer.AppendString(countryAbbreviation);
-            writer.AppendString(country);
+            writer.AppendAsciiString(countryAbbreviation);
+            writer.AppendAsciiString(country);
 
             byte[] dataBytes = writer.Bytes;
             SidHeader header = new SidHeader(dataBytes, MessageType);

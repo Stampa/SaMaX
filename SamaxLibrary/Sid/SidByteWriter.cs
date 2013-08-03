@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Text;
     using MiscUtil.Conversion;
@@ -15,14 +16,9 @@
     public class SidByteWriter
     {
         /// <summary>
-        /// A converter that is used in the writing.
-        /// </summary>
-        private LittleEndianBitConverter converter;
-
-        /// <summary>
         /// The underlying list of bytes to which bytes are written.
         /// </summary>
-        private List<byte> bytes;
+        private readonly List<byte> bytes;
 
         /// <summary>
         /// Gets the array of bytes that have been written.
@@ -34,6 +30,11 @@
                 return this.bytes.ToArray();
             }
         }
+
+        /// <summary>
+        /// A converter that is used in the writing.
+        /// </summary>
+        private LittleEndianBitConverter converter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SidByteWriter"/> class.
@@ -51,6 +52,8 @@
         /// <remarks>The value is encoded in little-endian.</remarks>
         public void AppendInt32(Int32 value)
         {
+            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+
             byte[] bytesToAppend = this.converter.GetBytes(value);
             this.bytes.AddRange(bytesToAppend);
         }
@@ -66,6 +69,8 @@
         /// 4.</exception>
         public void AppendEnumAsDwordString(Enum value)
         {
+            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+
             if (value == null)
             {
                 throw new ArgumentNullException("value");
@@ -95,6 +100,8 @@
         /// </exception>
         public void AppendDwordString(string value)
         {
+            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+
             if (value == null)
             {
                 throw new ArgumentNullException("value");
@@ -127,7 +134,8 @@
         /// <param name="value">The string to append to the bytes.</param>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
         /// </exception>
-        public void AppendString(string value)
+        /// <remarks>A null terminator is appended as well.</remarks>
+        public void AppendAsciiString(string value)
         {
             if (value == null)
             {
@@ -149,12 +157,35 @@
         /// </exception>
         public void AppendByteArray(byte[] value)
         {
+            this.EnsuresSpecifiedAmountOfBytesWritten(value.Length);
+
             if (value == null)
             {
                 throw new ArgumentNullException("value");
             }
 
             this.bytes.AddRange(value);
+        }
+
+        /// <summary>
+        /// Contains the object invariants for the <see cref="SidByteWriter"/> class.
+        /// </summary>
+        [ContractInvariantMethod]
+        private void SidByteWriterInvariants()
+        {
+            Contract.Invariant(this.bytes != null);
+            Contract.Invariant(this.converter != null);
+        }
+
+        /// <summary>
+        /// Ensures that the specified amount of bytes are written.
+        /// </summary>
+        /// <param name="count">The amount of bytes that are written.</param>
+        [ContractAbbreviator]
+        private void EnsuresSpecifiedAmountOfBytesWritten(int count)
+        {
+            Contract.Ensures(this.bytes.Count == Contract.OldValue<int>(this.bytes.Count) + count);
+            Contract.Ensures(this.Bytes.Length == Contract.OldValue<int>(this.Bytes.Length) + count);
         }
     }
 }

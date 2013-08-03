@@ -334,7 +334,8 @@
             Contract.Invariant(this.index >= 0);
             Contract.Invariant(this.index <= this.bytes.Length);
 
-            // If there are bytes to parse, the index is valid for the bytes array field.
+            // If there are bytes to parse, the index is in range of valid indices for the bytes
+            // array field.
             // Otherwise, the index is just outside the valid range (like C++ iterators
             // (for arrays at least)).
             Contract.Invariant(

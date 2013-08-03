@@ -36,6 +36,10 @@
     <Filter entryType="Method" fullName="SamaxLibrary.Sid.SidByteParser.$InvariantMethod$" filterName="$InvariantMethod$" isExposed="False" />
     <Filter entryType="Field" fullName="SamaxLibrary.Sid.SidByteParser.$evaluatingInvariant$" filterName="$evaluatingInvariant$" isExposed="False" />
   </Filter>
+  <Filter entryType="Class" fullName="SamaxLibrary.Sid.SidByteWriter" filterName="SidByteWriter" isExposed="True">
+    <Filter entryType="Method" fullName="SamaxLibrary.Sid.SidByteWriter.$InvariantMethod$" filterName="$InvariantMethod$" isExposed="False" />
+    <Filter entryType="Field" fullName="SamaxLibrary.Sid.SidByteWriter.$evaluatingInvariant$" filterName="$evaluatingInvariant$" isExposed="False" />
+  </Filter>
 </Filter>
 <Filter entryType="Namespace" fullName="SamaxLibraryTests" isExposed="False" /></ApiFilter>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
