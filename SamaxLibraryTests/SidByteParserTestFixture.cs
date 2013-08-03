@@ -1,7 +1,9 @@
 ﻿namespace SamaxLibraryTests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using NUnit.Framework;
     using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
@@ -27,6 +29,7 @@
 
         private const string BoundaryCase = "Boundary case.";
         private const string TypicalCase = "Typical case.";
+        private const string NonboundaryCase = "Nonboundary case (but not typical).";
 
         [Test]
         public void Constructor_WhenBytesIsNull_ThrowsArgumentNullException()
@@ -54,7 +57,7 @@
         public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasSpecifiedAmountOfBytesLeft(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(dataByteCount));
         }
 
@@ -64,7 +67,7 @@
         public void Constructor_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot0(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = dataByteCount != 0 ?
                 (IResolveConstraint)Is.True : Is.False;
             Assert.That(parser.HasBytesLeft, fulfillsConstraint);
@@ -77,7 +80,7 @@
         public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
                 (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
             Assert.That(() => parser.ReadInt32(), fulfillsConstraint);
@@ -89,7 +92,7 @@
         public void ReadInt32_WhenParserHasSpecifiedDataByteCount_ParserHasBytesLeftIffDataByteCountIsNot4(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft != 4 ?
                 (IResolveConstraint)Is.True : Is.False;
             parser.ReadInt32();
@@ -101,7 +104,7 @@
         public void ReadInt32_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy4(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
             parser.ReadInt32();
             Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
@@ -135,7 +138,7 @@
         [Test]
         public void ReadInt32AsEnum_WhenTypeParameterIsNotAnEnumerationType_ThrowsArgumentException()
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(20);
+            SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(20);
             Assert.That(() => parser.ReadInt32AsEnum<Int64>(), Throws.ArgumentException);
         }
 
@@ -146,7 +149,7 @@
         public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan4(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
                 (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
             Assert.That(() => parser.ReadInt32AsEnum<SidByteParserTestEnum>(), fulfillsConstraint);
@@ -166,7 +169,7 @@
         public void ReadInt32AsEnum_WhenParserHasSpecifiedCountOfZeroedDataBytes_DecreasesBytesLeftBy4(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
             int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
             parser.ReadInt32AsEnum<SidByteParserTestEnum>();
             Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
@@ -204,7 +207,7 @@
         public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffDataByteCountIsLessThan8(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 8 ?
                 (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
             Assert.That(() => parser.ReadUInt64(), fulfillsConstraint);
@@ -215,7 +218,7 @@
         public void ReadUInt64_WhenParserHasSpecifiedDataByteCount_DecreasesBytesLeftBy8(
             int dataByteCount)
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteCount(dataByteCount);
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
             int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
             parser.ReadUInt64();
             Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 8));
@@ -228,7 +231,8 @@
         [TestCase(
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             ExpectedResult = UInt64.MaxValue,
-            Description = "It should be possible to read values that cannot be stored in a signed 64-bit integer.")]
+            Description = "It should be possible to read UInt64 values that cannot be stored in" +
+                "a signed 64-bit integer.")]
         [TestCase(
             0, 0, 0, 0, 0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = 0,
@@ -250,20 +254,118 @@
             return parser.ReadUInt64();
         }
 
+        [TestCase(-20, Description = NonboundaryCase)]
+        [TestCase(-1, Description = BoundaryCase)]
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(1, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void ReadByteArray_WhenCountIsAsSpecified_ThrowsArgumentOutOfRangeExceptionIffCountIsLessThan0(
+            int count)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(50);
+            IResolveConstraint fulfillsConstraint = count < 0 ?
+                (IResolveConstraint)Throws.TypeOf<ArgumentOutOfRangeException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadByteArray(count), fulfillsConstraint);
+        }
+
+        [TestCase(40, 20, Description = TypicalCase)]
+        public void ReadByteArray_WhenParserHasSpecifiedDataByteCount_ThrowsSidByteParserExceptionIffCountIsGreaterThanDataByteCount(
+            [Values(0, 1, 20)] int dataByteCount,
+            [Values(0, 1, 20)] int count)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
+            IResolveConstraint fulfillsConstraint = count > parser.AmountOfBytesLeft ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadByteArray(count), fulfillsConstraint);
+        }
+
+        // TODO: Using Combinatorial (default) and checking for invalid combinations in the method
+        // could be better than using Sequential and carefully pairing up the arguments.
+        [SuppressMessage("Microsoft.StyleCop.CSharp.SpacingRules", "SA1025:CodeMustNotContainMultipleWhitespaceInARow", Justification = "Proper alignment improves the readability.")]
+        [TestCase(40, 20, Description = TypicalCase)]
+        [Sequential]
+        public void ReadByteArray_DecreasesDataByteCountByCount(
+            [Values(0, 1, 1, 20, 20, 20)] int dataByteCount,
+            [Values(0, 0, 1,  0,  1, 20)]  int count)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadByteArray(count);
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - count));
+        }
+
+        private IEnumerable<TestCaseData> ReadByteArrayTestSource()
+        {
+            const string ReturnValueShouldBeEmptyArrayWhenCountIs0 =
+                "Return value should be empty array when count is 0.";
+            byte[] emptyArray = new byte[0];
+            yield return new TestCaseData(
+                GetRandomByteArray(0), 0)
+                .Returns(emptyArray)
+                .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
+            yield return new TestCaseData(
+                GetRandomByteArray(1), 0)
+                .Returns(emptyArray)
+                .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
+            yield return new TestCaseData(
+                GetRandomByteArray(20), 0)
+                .Returns(emptyArray)
+                .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
+
+            const string ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount =
+                "Return value should be entire array when count is data byte count.";
+            byte[] dataBytes = GetRandomByteArray(0);
+            yield return new TestCaseData(
+                dataBytes, 0)
+                .Returns(dataBytes)
+                .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
+            dataBytes = GetRandomByteArray(1);
+            yield return new TestCaseData(
+                dataBytes, 1)
+                .Returns(dataBytes)
+                .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
+            dataBytes = GetRandomByteArray(20);
+            yield return new TestCaseData(
+                dataBytes, 20)
+                .Returns(dataBytes)
+                .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
+
+            dataBytes = GetRandomByteArray(20);
+            yield return new TestCaseData(
+                dataBytes, 5)
+                .Returns(new byte[5] { dataBytes[0], dataBytes[1], dataBytes[2], dataBytes[3], dataBytes[4] })
+                .SetDescription(TypicalCase);
+        }
+
+        [TestCaseSource("ReadByteArrayTestSource")]
+        public byte[] ReadByteArray(byte[] dataBytes, int count)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            return parser.ReadByteArray(count);
+        }
+
+        private byte[] GetRandomByteArray(int count)
+        {
+            byte[] bytes = new byte[count];
+            new Random(0).NextBytes(bytes);
+            return bytes;
+        }
+
         private SidByteParser CreateSidByteParser(byte[] bytesToParse)
         {
             return new SidByteParser(bytesToParse);
         }
 
-        private SidByteParser CreateSidByteParserWithSpecifiedDataByteCount(int dataByteCount)
+        private SidByteParser CreateSidByteParserWithRandomDataBytes(int dataByteCount)
         {
-            return CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(dataByteCount);
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
         }
 
-        private SidByteParser CreateSidByteParserWithSpecifiedCountOfZeroedDataBytes(int dataByteCount)
+        private SidByteParser CreateSidByteParserWithZeroedDataBytes(int dataByteCount)
         {
-            byte[] bytes = new byte[dataByteCount];
-            return CreateSidByteParserWithSpecifiedDataBytes(bytes);
+            byte[] dataBytes = new byte[dataByteCount];
+            return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
         }
 
         private SidByteParser CreateSidByteParserWithSpecifiedDataBytes(params byte[] dataBytes)
