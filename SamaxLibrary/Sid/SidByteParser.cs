@@ -105,7 +105,7 @@
         public Int32 ReadInt32()
         {
             const int AmountOfBytesToRead = 4;
-            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
 
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
@@ -136,7 +136,7 @@
             where T : struct, IComparable, IConvertible, IFormattable
         {
             const int AmountOfBytesToRead = 4;
-            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
 
             Type enumType = typeof(T);
             if (!enumType.IsEnum)
@@ -168,7 +168,7 @@
         public UInt64 ReadUInt64()
         {
             const int AmountOfBytesToRead = 8;
-            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
 
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
@@ -196,7 +196,7 @@
         /// bytes left in the array of bytes to parse.</exception>
         public byte[] ReadByteArray(int count)
         {
-            this.EnsuresIndexFieldIncreasedBy(count);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(count);
 
             if (count < 0)
             {
@@ -259,7 +259,7 @@
         public string ReadDwordString()
         {
             const int AmountOfBytesToRead = 4;
-            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
 
             if (this.AmountOfBytesLeft < AmountOfBytesToRead)
             {
@@ -296,7 +296,7 @@
             where T : struct, IComparable, IConvertible, IFormattable
         {
             const int AmountOfBytesToRead = 4;
-            this.EnsuresIndexFieldIncreasedBy(AmountOfBytesToRead);
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
 
             Type enumType = typeof(T);
             if (!enumType.IsEnum)
@@ -344,14 +344,14 @@
         }
 
         /// <summary>
-        /// Ensures that <see cref="index"/> is increased by a specified value.
+        /// Ensures that the specified amount of bytes are read.
         /// </summary>
-        /// <param name="value">The value by which <see cref="index"/> is ensured to be
-        /// increased.</param>
+        /// <param name="count">The amount of bytes that are read.</param>
         [ContractAbbreviator]
-        private void EnsuresIndexFieldIncreasedBy(int value)
+        private void EnsuresSpecifiedAmountOfBytesAreRead(int count)
         {
-            Contract.Ensures(this.index == Contract.OldValue<int>(this.index) + value);
+            Contract.Ensures(this.index == Contract.OldValue<int>(this.index) + count);
+            Contract.Ensures(this.AmountOfBytesLeft == Contract.OldValue<int>(this.AmountOfBytesLeft) - count);
         }
     }
 }

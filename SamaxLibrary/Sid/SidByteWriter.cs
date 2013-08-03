@@ -52,7 +52,7 @@
         /// <remarks>The value is encoded in little-endian.</remarks>
         public void AppendInt32(Int32 value)
         {
-            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
 
             byte[] bytesToAppend = this.converter.GetBytes(value);
             this.bytes.AddRange(bytesToAppend);
@@ -69,7 +69,7 @@
         /// 4.</exception>
         public void AppendEnumAsDwordString(Enum value)
         {
-            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
 
             if (value == null)
             {
@@ -100,7 +100,7 @@
         /// </exception>
         public void AppendDwordString(string value)
         {
-            this.EnsuresSpecifiedAmountOfBytesWritten(4);
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
 
             if (value == null)
             {
@@ -157,7 +157,7 @@
         /// </exception>
         public void AppendByteArray(byte[] value)
         {
-            this.EnsuresSpecifiedAmountOfBytesWritten(value.Length);
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(value.Length);
 
             if (value == null)
             {
@@ -182,7 +182,7 @@
         /// </summary>
         /// <param name="count">The amount of bytes that are written.</param>
         [ContractAbbreviator]
-        private void EnsuresSpecifiedAmountOfBytesWritten(int count)
+        private void EnsuresSpecifiedAmountOfBytesAreWritten(int count)
         {
             Contract.Ensures(this.bytes.Count == Contract.OldValue<int>(this.bytes.Count) + count);
             Contract.Ensures(this.Bytes.Length == Contract.OldValue<int>(this.Bytes.Length) + count);
