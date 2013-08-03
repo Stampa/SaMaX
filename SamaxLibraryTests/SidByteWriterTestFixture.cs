@@ -1,7 +1,9 @@
 ﻿namespace SamaxLibraryTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using NUnit.Framework;
     using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
@@ -104,6 +106,76 @@
         {
             SidByteWriter writer = CreateSidByteWriter();
             writer.AppendDwordString(dwordString);
+            Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
+        }
+
+        [Test]
+        public void AppendEnumAsDwordString_WhenEnumValueIsNull_ThrowsArgumentNullException()
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            Assert.That(
+                () => writer.AppendEnumAsDwordString(null),
+                Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void AppendEnumAsDwordString_WhenEnumValueDoesNotMatchAnyEnumMember_ThrowsArgumentException()
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            SidByteParserAndWriterTestEnum value = SidByteParserAndWriterTestEnum.NoMemberAtMePlusOne + 1;
+            Assert.That(() => writer.AppendEnumAsDwordString(value), Throws.ArgumentException);
+        }
+
+        [TestCase(SidByteParserAndWriterTestEnum.X, Description = NonboundaryCase)]
+        [TestCase(SidByteParserAndWriterTestEnum.Pan, Description = BoundaryCase)]
+        [TestCase(SidByteParserAndWriterTestEnum.Ha1O, Description = BoundaryCase)]
+        [TestCase(SidByteParserAndWriterTestEnum.Samax, Description = BoundaryCase)]
+        [TestCase(SidByteParserAndWriterTestEnum.Member0, Description = NonboundaryCase)]
+        public void AppendEnumAsDwordString_WhenEnumValueMatchesEnumMember_ThrowsArgumentException_IffStringRepresentationIsNotOfLength4(
+            SidByteParserAndWriterTestEnum enumValue)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            IResolveConstraint fulfillsConstraint = enumValue.ToString().Length != 4 ?
+                (IResolveConstraint)Throws.ArgumentException : Throws.Nothing;
+            Assert.That(() => writer.AppendEnumAsDwordString(enumValue), fulfillsConstraint);
+        }
+
+        [TestCase(0, Description = BoundaryCase)]
+        [TestCase(1, Description = BoundaryCase)]
+        [TestCase(20, Description = TypicalCase)]
+        public void AppendEnumAsDwordString_IncreasesDataByteCountBy4(int dataByteCount)
+        {
+            SidByteWriter writer = CreateSidByteWriterWithRandomDataBytes(dataByteCount);
+            int oldAmountOfBytes = writer.Bytes.Length;
+            writer.AppendEnumAsDwordString(SidByteParserAndWriterTestEnum.Ha1O);
+            Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + 4));
+        }
+
+        private IEnumerable<TestCaseData> AppendEnumAsDwordStringTestSource()
+        {
+            // Relying on this to work "as expected" might be a little bad.
+            Encoding ascii = Encoding.ASCII;
+
+            yield return new TestCaseData(
+                SidByteParserAndWriterTestEnum.Abba,
+                ascii.GetBytes("ABBA"))
+                .SetDescription("The value should be written in upper case.");
+            yield return new TestCaseData(
+                SidByteParserAndWriterTestEnum.Pals,
+                ascii.GetBytes("SLAP"))
+                .SetDescription(TheValueShouldBeWrittenInLittleEndian);
+            yield return new TestCaseData(
+                SidByteParserAndWriterTestEnum.Ha1O,
+                ascii.GetBytes("O1AH"))
+                .SetDescription("It should be possible to write digits.");
+        }
+
+        [TestCaseSource("AppendEnumAsDwordStringTestSource")]
+        public void AppendEnumAsDwordString_AppendsSpecifiedBytes(
+            SidByteParserAndWriterTestEnum enumValue, params byte[] bytes)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            writer.AppendEnumAsDwordString(enumValue);
             Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
         }
 

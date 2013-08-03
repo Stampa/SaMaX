@@ -153,15 +153,16 @@
             SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
             IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
                 (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
-            Assert.That(() => parser.ReadInt32AsEnum<SidByteParserTestEnum>(), fulfillsConstraint);
+            Assert.That(() => parser.ReadInt32AsEnum<SidByteParserAndWriterTestEnum>(), fulfillsConstraint);
         }
 
         [Test]
         public void ReadInt32AsEnum_WhenReadValueDoesNotMatchAnyEnumMember_ThrowsSidByteParserException()
         {
-            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(2, 0, 0, 0);
+            byte nonmatchingValue = (byte)(SidByteParserAndWriterTestEnum.NoMemberAtMePlusOne + 1);
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(nonmatchingValue, 0, 0, 0);
             Assert.That(
-                () => parser.ReadInt32AsEnum<SidByteParserTestEnum>(),
+                () => parser.ReadInt32AsEnum<SidByteParserAndWriterTestEnum>(),
                 Throws.InstanceOf<SidByteParserException>());
         }
 
@@ -172,23 +173,23 @@
         {
             SidByteParser parser = CreateSidByteParserWithZeroedDataBytes(dataByteCount);
             int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
-            parser.ReadInt32AsEnum<SidByteParserTestEnum>();
+            parser.ReadInt32AsEnum<SidByteParserAndWriterTestEnum>();
             Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
         }
 
         [TestCase(
             1, 2, 3, 4,
-            ExpectedResult = SidByteParserTestEnum.EndiannessTestMember,
+            ExpectedResult = SidByteParserAndWriterTestEnum.EndiannessTestMember,
             Description = TheValueShouldBeReadInLittleEndian)]
         [TestCase(
             0, 0, 0, 0, (byte)1,
-            ExpectedResult = SidByteParserTestEnum.Member0,
+            ExpectedResult = SidByteParserAndWriterTestEnum.Member0,
             Description = OnlyTheFirstFourBytesShouldAffectTheResult)]
         [TestCase(
             0, 0, 0, 0, (byte)0xFF,
-            ExpectedResult = SidByteParserTestEnum.Member0,
+            ExpectedResult = SidByteParserAndWriterTestEnum.Member0,
             Description = OnlyTheFirstFourBytesShouldAffectTheResult)]
-        public SidByteParserTestEnum ReadInt32AsEnum_WhenEnumTypeIsTestEnum(
+        public SidByteParserAndWriterTestEnum ReadInt32AsEnum_WhenEnumTypeIsTestEnum(
             byte byte1,
             byte byte2,
             byte byte3,
@@ -198,7 +199,7 @@
             List<byte> dataBytes = new List<byte> { byte1, byte2, byte3, byte4 };
             dataBytes.AddRange(remainingBytes);
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes.ToArray());
-            return parser.ReadInt32AsEnum<SidByteParserTestEnum>();
+            return parser.ReadInt32AsEnum<SidByteParserAndWriterTestEnum>();
         }
 
         [TestCase(0, Description = BoundaryCase)]
