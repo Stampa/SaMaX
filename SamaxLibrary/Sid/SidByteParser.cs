@@ -224,6 +224,8 @@
         /// Reads a null-terminated ASCII string.
         /// </summary>
         /// <returns>The string that was read.</returns>
+        /// <exception cref="SidByteParserException">There is no null terminator in the bytes to
+        /// parse.</exception>
         /// <remarks>The null terminator is not included in the string that is returned.</remarks>
         public string ReadAsciiString()
         {
@@ -231,7 +233,7 @@
             int indexOfTerminator = Array.IndexOf<byte>(this.bytes, NullTerminatorValue, this.index);
             if (indexOfTerminator == -1)
             {
-                throw new SidByteParserException("The null terminator could not be found in the string.");
+                throw new SidByteParserException("No null terminator was found in the bytes.");
             }
 
             int amountOfBytesInNullTerminatedString = indexOfTerminator - this.index + 1;

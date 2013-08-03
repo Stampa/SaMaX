@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Text;
     using NUnit.Framework;
     using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
@@ -299,40 +300,33 @@
             const string ReturnValueShouldBeEmptyArrayWhenCountIs0 =
                 "Return value should be empty array when count is 0.";
             byte[] emptyArray = new byte[0];
-            yield return new TestCaseData(
-                GetRandomByteArray(0), 0)
+            yield return new TestCaseData(GetRandomByteArray(0), 0)
                 .Returns(emptyArray)
                 .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
-            yield return new TestCaseData(
-                GetRandomByteArray(1), 0)
+            yield return new TestCaseData(GetRandomByteArray(1), 0)
                 .Returns(emptyArray)
                 .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
-            yield return new TestCaseData(
-                GetRandomByteArray(20), 0)
+            yield return new TestCaseData(GetRandomByteArray(20), 0)
                 .Returns(emptyArray)
                 .SetDescription(ReturnValueShouldBeEmptyArrayWhenCountIs0);
 
             const string ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount =
                 "Return value should be entire array when count is data byte count.";
             byte[] dataBytes = GetRandomByteArray(0);
-            yield return new TestCaseData(
-                dataBytes, 0)
+            yield return new TestCaseData(dataBytes, 0)
                 .Returns(dataBytes)
                 .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
             dataBytes = GetRandomByteArray(1);
-            yield return new TestCaseData(
-                dataBytes, 1)
+            yield return new TestCaseData(dataBytes, 1)
                 .Returns(dataBytes)
                 .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
             dataBytes = GetRandomByteArray(20);
-            yield return new TestCaseData(
-                dataBytes, 20)
+            yield return new TestCaseData(dataBytes, 20)
                 .Returns(dataBytes)
                 .SetDescription(ReturnValueShouldBeEntireArrayWhenCountIsDataByteCount);
 
             dataBytes = GetRandomByteArray(20);
-            yield return new TestCaseData(
-                dataBytes, 5)
+            yield return new TestCaseData(dataBytes, 5)
                 .Returns(new byte[5] { dataBytes[0], dataBytes[1], dataBytes[2], dataBytes[3], dataBytes[4] })
                 .SetDescription(TypicalCase);
         }
@@ -342,6 +336,97 @@
         {
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
             return parser.ReadByteArray(count);
+        }
+
+        private IEnumerable<TestCaseData> ReadAsciiStringTestSource1()
+        {
+            yield return new TestCaseData(new byte[0])
+                .SetDescription(BoundaryCase);
+            yield return new TestCaseData(new byte[1] { 1 })
+                .SetDescription(BoundaryCase);
+            yield return new TestCaseData(new byte[] { 65, 66, 67, 68, 69 })
+                .SetDescription(NonboundaryCase);
+            yield return new TestCaseData(new byte[1] { 0 })
+                .SetDescription(BoundaryCase);
+            yield return new TestCaseData(new byte[] { 0, 70, 71, 72, 73 })
+                .SetDescription("Null terminator at the very beginning.");
+            yield return new TestCaseData(new byte[] { 65, 65, 65, 65, 65, 0 })
+                .SetDescription("Null terminator at the very end.");
+            yield return new TestCaseData(new byte[] { 65, 66, 0, 192, 168 })
+                .SetDescription(TypicalCase);
+            yield return new TestCaseData(new byte[] { 65, 0, 75, 0, 85 })
+                .SetDescription("Multiple null terminators.");
+        }
+
+        [TestCaseSource("ReadAsciiStringTestSource1")]
+        public void ReadAsciiString_ThrowsSidByteParserException_IffNoNullTerminatorExists(
+            byte[] dataBytes)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            IResolveConstraint fulfillsConstraint = Array.IndexOf<byte>(dataBytes, 0) == -1 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadAsciiString(), fulfillsConstraint);
+        }
+
+        private IEnumerable<TestCaseData> ReadAsciiStringTestSource2()
+        {
+            const string NullTerminatorAtFirstIndex = "Null terminator at the very beginning.";
+            yield return new TestCaseData(new byte[1] { 0 })
+                .SetDescription(NullTerminatorAtFirstIndex);
+            yield return new TestCaseData(new byte[2] { 0, 0 })
+                .SetDescription(NullTerminatorAtFirstIndex);
+            yield return new TestCaseData(new byte[2] { 97, 0 })
+                .SetDescription(NullTerminatorAtFirstIndex);
+            yield return new TestCaseData(new byte[5])
+                .SetDescription(NullTerminatorAtFirstIndex);
+
+            // Using an Encoding might be a little crazy ...
+            Encoding ascii = Encoding.ASCII;
+            yield return new TestCaseData(ascii.GetBytes("Hello\0"))
+                .SetDescription("Null terminator at the very end.");
+            yield return new TestCaseData(ascii.GetBytes("Hello\0World\0"))
+                .SetDescription("Multiple null terminators.");
+        }
+
+        [TestCaseSource("ReadAsciiStringTestSource2")]
+        public void ReadAsciiString_DecreasesDataByteCountByStringLengthPlusOne(
+            byte[] dataBytes)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            string str = parser.ReadAsciiString();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - (str.Length + 1)));
+        }
+
+        private IEnumerable<TestCaseData> ReadAsciiStringTestSource3()
+        {
+            const string ShouldReturnEmptyStringWhenNullTerminatorAtFirstIndex =
+                "An empty string should be returned when a null terminator is at the first index.";
+            yield return new TestCaseData(new byte[1])
+                .Returns(String.Empty)
+                .SetDescription(ShouldReturnEmptyStringWhenNullTerminatorAtFirstIndex);
+            yield return new TestCaseData(new byte[2])
+                .Returns(String.Empty)
+                .SetDescription(ShouldReturnEmptyStringWhenNullTerminatorAtFirstIndex);
+            yield return new TestCaseData(new byte[20])
+                .Returns(String.Empty)
+                .SetDescription(ShouldReturnEmptyStringWhenNullTerminatorAtFirstIndex);
+
+            Encoding ascii = Encoding.ASCII;
+            yield return new TestCaseData(ascii.GetBytes("Toodles\0"))
+                .Returns("Toodles")
+                .SetDescription("Null terminator at the very end.");
+            yield return new TestCaseData(ascii.GetBytes("Toodles\0World\0"))
+                .Returns("Toodles")
+                .SetDescription("Multiple null terminators.");
+        }
+
+        [TestCaseSource("ReadAsciiStringTestSource3")]
+        public string ReadAsciiString(
+            byte[] dataBytes)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            return parser.ReadAsciiString();
         }
 
         private byte[] GetRandomByteArray(int count)
