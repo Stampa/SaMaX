@@ -19,18 +19,18 @@
     [TestFixture]
     public class SidByteParserTestFixture
     {
-        private const string OnlyTheFirstFourBytesShouldAffectTheResultDescription =
-            "Only the first four bytes should affect the result.";
-
-        private const string OnlyTheFirstEightBytesShouldAffectTheResultDescription =
-            "Only the first eight bytes should affect the result.";
-
-        private const string TheValueShouldBeReadInLittleEndianDescription =
-            "The value should be read in little-endian.";
-
         private const string BoundaryCase = "Boundary case.";
         private const string TypicalCase = "Typical case.";
         private const string NonboundaryCase = "Nonboundary case (but not typical).";
+
+        private const string OnlyTheFirstFourBytesShouldAffectTheResult =
+            "Only the first four bytes should affect the result.";
+
+        private const string OnlyTheFirstEightBytesShouldAffectTheResult =
+            "Only the first eight bytes should affect the result.";
+
+        private const string TheValueShouldBeReadInLittleEndian =
+            "The value should be read in little-endian.";
 
         [Test]
         public void Constructor_WhenBytesIsNull_ThrowsArgumentNullException()
@@ -114,7 +114,7 @@
         [TestCase(
             1, 2, 3, 4,
             ExpectedResult = 1 + 256 * (2 + 256 * (3 + 256 * 4)),
-            Description = TheValueShouldBeReadInLittleEndianDescription)]
+            Description = TheValueShouldBeReadInLittleEndian)]
         [TestCase(
             0, 0, 0, 0x80,
             ExpectedResult = Int32.MinValue,
@@ -122,7 +122,7 @@
         [TestCase(
             0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = 0,
-            Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
+            Description = OnlyTheFirstFourBytesShouldAffectTheResult)]
         public Int32 ReadInt32( // Hehe, hidden method name here :)
             byte byte1,
             byte byte2,
@@ -179,15 +179,15 @@
         [TestCase(
             1, 2, 3, 4,
             ExpectedResult = SidByteParserTestEnum.EndiannessTestMember,
-            Description = TheValueShouldBeReadInLittleEndianDescription)]
+            Description = TheValueShouldBeReadInLittleEndian)]
         [TestCase(
             0, 0, 0, 0, (byte)1,
             ExpectedResult = SidByteParserTestEnum.Member0,
-            Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
+            Description = OnlyTheFirstFourBytesShouldAffectTheResult)]
         [TestCase(
             0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = SidByteParserTestEnum.Member0,
-            Description = OnlyTheFirstFourBytesShouldAffectTheResultDescription)]
+            Description = OnlyTheFirstFourBytesShouldAffectTheResult)]
         public SidByteParserTestEnum ReadInt32AsEnum_WhenEnumTypeIsTestEnum(
             byte byte1,
             byte byte2,
@@ -228,7 +228,7 @@
         [TestCase(
             1, 2, 3, 4, 5, 6, 7, 8,
             ExpectedResult = 0x0807060504030201U,
-            Description = TheValueShouldBeReadInLittleEndianDescription)]
+            Description = TheValueShouldBeReadInLittleEndian)]
         [TestCase(
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
             ExpectedResult = UInt64.MaxValue,
@@ -237,7 +237,7 @@
         [TestCase(
             0, 0, 0, 0, 0, 0, 0, 0, (byte)0xFF,
             ExpectedResult = 0,
-            Description = OnlyTheFirstEightBytesShouldAffectTheResultDescription)]
+            Description = OnlyTheFirstEightBytesShouldAffectTheResult)]
         public UInt64 ReadUInt64(
             byte byte1,
             byte byte2,
@@ -441,15 +441,15 @@
             return new SidByteParser(bytesToParse);
         }
 
-        private SidByteParser CreateSidByteParserWithRandomDataBytes(int dataByteCount)
-        {
-            byte[] dataBytes = GetRandomByteArray(dataByteCount);
-            return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
-        }
-
         private SidByteParser CreateSidByteParserWithZeroedDataBytes(int dataByteCount)
         {
             byte[] dataBytes = new byte[dataByteCount];
+            return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+        }
+
+        private SidByteParser CreateSidByteParserWithRandomDataBytes(int dataByteCount)
+        {
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
             return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
         }
 
