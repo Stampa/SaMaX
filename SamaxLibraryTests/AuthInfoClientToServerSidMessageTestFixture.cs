@@ -19,6 +19,17 @@
         private const string NonboundaryCase = "Nonboundary case (but not typical).";
 
         private byte[] validMessageBytes = new byte[] { 0xff, 0x50, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x38, 0x58, 0x49, 0x50, 0x58, 0x32, 0x44, 0x0d, 0x00, 0x00, 0x00, 0x53, 0x55, 0x6e, 0x65, 0xc0, 0xa8, 0x01, 0x02, 0x88, 0xff, 0xff, 0xff, 0x1d, 0x04, 0x00, 0x00, 0x1d, 0x04, 0x00, 0x00, 0x53, 0x57, 0x45, 0x00, 0x53, 0x77, 0x65, 0x64, 0x65, 0x6e, 0x00 };
+        
+        private const ProductID ValidProductID = ProductID.D2xp;
+        private const ProductID NonmatchingProductID = (ProductID)(-17);
+        private const Int32 ValidVersion = 0xD;
+        private byte[] validLocalIPAddress = new byte[] { 192, 168, 1, 2 };
+
+        [Test]
+        public void MessageType()
+        {
+            Assert.That(AuthInfoClientToServerSidMessage.MessageType, Is.EqualTo(SidMessageType.AuthInfo));
+        }
 
         [Test]
         public void Constructor_WhenMessageBytesNull_ThrowsArgumentNullException()
@@ -58,11 +69,6 @@
             Assert.That(message.TimeZoneBiasInMinutes, Is.EqualTo(-120));
             Assert.That(message.Version, Is.EqualTo(0xD));
         }
-
-        private const ProductID ValidProductID = ProductID.D2xp;
-        private const ProductID NonmatchingProductID = (ProductID)(-17);
-        private const Int32 ValidVersion = 0xD;
-        private byte[] validLocalIPAddress = new byte[] { 192, 168, 1, 2 };
 
         [Test]
         public void CreateFromHighLevelData_WhenLocalIPAddressIsNull_ThrowsArgumentNullException()

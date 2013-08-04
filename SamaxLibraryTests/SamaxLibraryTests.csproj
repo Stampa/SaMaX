@@ -60,6 +60,7 @@
     <Compile Include="SidByteParserTestFixture.cs" />
     <Compile Include="SidByteWriterTestFixture.cs" />
     <Compile Include="AuthInfoClientToServerSidMessageTestFixture.cs" />
+    <Compile Include="AuthInfoServerToClientSidMessageTestFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SamaxLibrary\SamaxLibrary.csproj">

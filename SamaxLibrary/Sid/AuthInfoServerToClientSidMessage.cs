@@ -80,7 +80,9 @@
                 this.UdpValue = parser.ReadInt32();
 
                 UInt64 fileTime = parser.ReadUInt64();
-                Int64 signedFileTime = (Int64)fileTime; // TODO: What happens if fileTime is large?
+                
+                // The cast is safe. Large values for fileTime will cause ArgumentOutOfRange below.
+                Int64 signedFileTime = (Int64)fileTime;
 
                 try
                 {
