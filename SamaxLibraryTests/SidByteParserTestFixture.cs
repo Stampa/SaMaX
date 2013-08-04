@@ -295,7 +295,7 @@
         [SuppressMessage("Microsoft.StyleCop.CSharp.SpacingRules", "SA1025:CodeMustNotContainMultipleWhitespaceInARow", Justification = "Proper alignment improves the readability.")]
         [TestCase(40, 20, Description = TypicalCase)]
         [Sequential]
-        public void ReadByteArray_DecreasesDataByteCountByCount(
+        public void ReadByteArray_DecreasesBytesLeftByCount(
             [Values(0, 1, 1, 20, 20, 20)] int dataByteCount,
             [Values(0, 0, 1,  0,  1, 20)]  int count)
         {
@@ -348,6 +348,8 @@
             return parser.ReadByteArray(count);
         }
 
+        // This could be expressed as a series of TestCases just as well;
+        // all the input and descriptions are array creation and constant expressions.
         private IEnumerable<TestCaseData> ReadAsciiStringTestSource1()
         {
             yield return new TestCaseData(new byte[0])
@@ -399,7 +401,7 @@
         }
 
         [TestCaseSource("ReadAsciiStringTestSource2")]
-        public void ReadAsciiString_DecreasesDataByteCountByStringLengthPlusOne(
+        public void ReadAsciiString_DecreasesBytesLeftByStringLengthPlusOne(
             byte[] dataBytes)
         {
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
@@ -437,6 +439,43 @@
         {
             SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
             return parser.ReadAsciiString();
+        }
+
+        [Test]
+        public void ReadDwordString_ThrowsSidByteParserException_IffDataByteCountIsLessThan4(
+            [Values(0, 1, 3, 4, 20)] int dataByteCount)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(() => parser.ReadDwordString(), fulfillsConstraint);
+        }
+
+        [Test]
+        public void ReadDwordString_DecreasesBytesLeftBy4(
+            [Values(4, 5, 20)] int dataByteCount)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadDwordString();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
+        }
+
+        private IEnumerable<TestCaseData> ReadDwordStringTestSource()
+        {
+            yield return new TestCaseData(new byte[] { 0x5A, 0x7A, 0x7A, 0x5A })
+                .Returns("ZzzZ")
+                .SetDescription("The case should be preserved.");
+            yield return new TestCaseData(new byte[] { 0x41, 0x61, 0x42, 0x62 })
+                .Returns("bBaA")
+                .SetDescription(TheValueShouldBeReadInLittleEndian);
+        }
+
+        [TestCaseSource("ReadDwordStringTestSource")]
+        public string ReadDwordString(byte[] dataBytes)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            return parser.ReadDwordString();
         }
 
         private byte[] GetRandomByteArray(int count)

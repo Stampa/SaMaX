@@ -292,6 +292,7 @@
         /// <exception cref="SidByteParserException">There are fewer than 4 bytes left in the
         /// array of bytes to parse, or there is no constant in the enumeration whose string
         /// representation is the dword string that is read from the array of bytes.</exception>
+        /// TODO: Enforce that the dword string is in upper case? If so, update the unit tests.
         public T ReadDwordStringAsEnum<T>()
             where T : struct, IComparable, IConvertible, IFormattable
         {
