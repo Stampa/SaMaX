@@ -263,6 +263,47 @@
             Assert.That(writer.Bytes.Skip(0), Is.EqualTo(bytes));
         }
 
+        [Test]
+        public void AppendByteArray_WhenArrayIsNull_ThrowsArgumentNullException()
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            Assert.That(() => writer.AppendByteArray(null), Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void AppendByteArray_IncreasesDataByteCountByArrayLength(
+            [Values(0, 1, 20)] int dataByteCount,
+            [Values(0, 1, 10)] int arrayLength)
+        {
+            SidByteWriter writer = CreateSidByteWriterWithRandomDataBytes(dataByteCount);
+            byte[] byteArray = GetRandomByteArray(arrayLength);
+            int oldAmountOfBytes = writer.Bytes.Length;
+            writer.AppendByteArray(byteArray);
+            Assert.That(writer.Bytes.Length, Is.EqualTo(oldAmountOfBytes + byteArray.Length));
+        }
+
+        [Test]
+        public void AppendByteArray_DoesNotAffectOriginalDataBytes(
+            [Values(0, 1, 20)] int dataByteCount,
+            [Values(0, 1, 15)] int byteArrayLength)
+        {
+            byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            SidByteWriter writer = CreateSidByteWriterWithSpecifiedDataBytes(dataBytes);
+            byte[] byteArray = GetRandomByteArray(byteArrayLength);
+            writer.AppendByteArray(byteArray);
+            Assert.That(writer.Bytes.Take(dataByteCount), Is.EqualTo(dataBytes));
+        }
+
+        [TestCase(new byte[0], Description = BoundaryCase)]
+        [TestCase(new byte[1] { 0xE9 }, Description = BoundaryCase)]
+        [TestCase(new byte[5] { 21, 34, 55, 89, 144 }, Description = TypicalCase)]
+        public void AppendByteArray_AppendsSpecifiedBytes(byte[] byteArray)
+        {
+            SidByteWriter writer = CreateSidByteWriter();
+            writer.AppendByteArray(byteArray);
+            Assert.That(writer.Bytes.Skip(0), Is.EqualTo(byteArray));
+        }
+
         private byte[] GetRandomByteArray(int count)
         {
             byte[] bytes = new byte[count];
