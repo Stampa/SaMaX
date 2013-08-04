@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using NUnit.Framework;
+    using NUnit.Framework.Constraints;
     using SamaxLibrary.Sid;
     using PlatformID = SamaxLibrary.Sid.PlatformID;
     
@@ -13,6 +14,10 @@
     [TestFixture]
     public class AuthInfoClientToServerSidMessageTestFixture
     {
+        private const string BoundaryCase = "Boundary case.";
+        private const string TypicalCase = "Typical case.";
+        private const string NonboundaryCase = "Nonboundary case (but not typical).";
+
         private byte[] validMessageBytes = new byte[] { 0xff, 0x50, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x38, 0x58, 0x49, 0x50, 0x58, 0x32, 0x44, 0x0d, 0x00, 0x00, 0x00, 0x53, 0x55, 0x6e, 0x65, 0xc0, 0xa8, 0x01, 0x02, 0x88, 0xff, 0xff, 0xff, 0x1d, 0x04, 0x00, 0x00, 0x1d, 0x04, 0x00, 0x00, 0x53, 0x57, 0x45, 0x00, 0x53, 0x77, 0x65, 0x64, 0x65, 0x6e, 0x00 };
 
         [Test]
@@ -52,6 +57,66 @@
             Assert.That(message.ProductLanguage, Is.EqualTo("enUS"));
             Assert.That(message.TimeZoneBiasInMinutes, Is.EqualTo(-120));
             Assert.That(message.Version, Is.EqualTo(0xD));
+        }
+
+        private const ProductID ValidProductID = ProductID.D2xp;
+        private const ProductID NonmatchingProductID = (ProductID)(-17);
+        private const Int32 ValidVersion = 0xD;
+        private byte[] validLocalIPAddress = new byte[] { 192, 168, 1, 2 };
+
+        [Test]
+        public void CreateFromHighLevelData_WhenLocalIPAddressIsNull_ThrowsArgumentNullException()
+        {
+            Assert.That(
+                () => AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
+                    ValidProductID,
+                    ValidVersion,
+                    null),
+                Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void CreateFromHighLevelData_WhenProductIDValueIsNotAValidProductID_ThrowsArgumentException()
+        {
+            Assert.That(
+                () => AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
+                    NonmatchingProductID,
+                    ValidVersion,
+                    validLocalIPAddress),
+                Throws.ArgumentException);
+        }
+
+        [TestCase(new byte[0], Description = BoundaryCase)]
+        [TestCase(new byte[1] { 78 }, Description = BoundaryCase)]
+        [TestCase(new byte[3] { 0xC0, 0xA8, 0 }, Description = BoundaryCase)]
+        [TestCase(new byte[4] { 192, 168, 1, 1 }, Description = BoundaryCase)]
+        [TestCase(new byte[5] { 192, 168, 1, 1, 1 }, Description = BoundaryCase)]
+        [TestCase(new byte[12] { 192, 168, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, Description = NonboundaryCase)]
+        public void CreateFromHighLevelData_WhenTheRestIsValid_ThrowsArgumentException_IffLocalIPAddressIsNotOfLength4(
+            byte[] localIPAddress)
+        {
+            IResolveConstraint fulfillsConstraint = localIPAddress.Length != 4 ?
+                (IResolveConstraint)Throws.ArgumentException : Throws.Nothing;
+            Assert.That(
+                () => AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
+                    ValidProductID,
+                    ValidVersion,
+                    localIPAddress),
+                fulfillsConstraint);
+        }
+
+        [Test]
+        public void CreateFromHighLevelData_WithValidArguments_ReturnsMessageWithProperProperties()
+        {
+            var message = AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
+                ValidProductID,
+                ValidVersion,
+                validLocalIPAddress);
+            Assert.That(message.LocalIpAddress, Is.EqualTo(validLocalIPAddress));
+            Assert.That(message.ProductID, Is.EqualTo(ValidProductID));
+            Assert.That(message.Version, Is.EqualTo(ValidVersion));
+
+            // TODO: Assert more things here?
         }
 
         private AuthInfoClientToServerSidMessage CreateMessage(byte[] messageBytes)
