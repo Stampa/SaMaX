@@ -13,9 +13,11 @@
         Pals = 12,
         Abba,
         Ha1O,
+        B33f = 0xBEEF,
         Samax,
         Pan,
         X,
+        Aaaa,
         EndiannessTestMember = 1 + 2 * 256 + 3 * 256 * 256 + 4 * 256 * 256 * 256
     }
 }

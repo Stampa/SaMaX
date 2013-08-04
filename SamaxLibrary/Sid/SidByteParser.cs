@@ -145,6 +145,9 @@
             }
 
             Int32 value = this.ReadInt32();
+            
+            // Casting int to T (which is not quite an Enum) directly does not work.
+            // Casting it to an object first should work: (T)((object)value)
             T enumValue = (T)Enum.ToObject(enumType, value);
 
             if (!Enum.IsDefined(enumType, enumValue))
@@ -286,7 +289,8 @@
         /// </summary>
         /// <typeparam name="T">The enumeration type as which to parse the dword string that is
         /// read.</typeparam>
-        /// <returns>The enumeration constant that the dword string that was read represents.</returns>
+        /// <returns>The enumeration constant that the dword string that was read represents.
+        /// </returns>
         /// <exception cref="ArgumentException"><typeparamref name="T"/> is not an enumeration
         /// type.</exception>
         /// <exception cref="SidByteParserException">There are fewer than 4 bytes left in the

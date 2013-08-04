@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Text;
     using NUnit.Framework;
     using NUnit.Framework.Constraints;
@@ -478,6 +479,88 @@
             return parser.ReadDwordString();
         }
 
+        [Test]
+        public void ReadDwordStringAsEnum_WhenTypeParameterIsNotAnEnumerationType_ThrowsArgumentException()
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(20);
+            Assert.That(() => parser.ReadDwordStringAsEnum<Int64>(), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void ReadDwordStringAsEnum_WhenDataByteCountIsLessThan4_ThrowsSidByteParserException(
+             [Values(0, 1, 3)] int dataByteCount)
+        {
+            SidByteParser parser = CreateSidByteParserWithRandomDataBytes(dataByteCount);
+            IResolveConstraint fulfillsConstraint = parser.AmountOfBytesLeft < 4 ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(
+                () => parser.ReadDwordStringAsEnum<SidByteParserAndWriterTestEnum>(),
+                fulfillsConstraint);
+        }
+
+        private IEnumerable<TestCaseData> ReadDwordStringAsEnumTestSource1()
+        {
+            Encoding ascii = Encoding.ASCII;
+            yield return new TestCaseData(ascii.GetBytes("SLAP"), false)
+                .SetDescription(TheValueShouldBeReadInLittleEndian);
+            yield return new TestCaseData(ascii.GetBytes("PALS"), true)
+                .SetDescription(TheValueShouldBeReadInLittleEndian);
+            yield return new TestCaseData(ascii.GetBytes("F33B"), false)
+                .SetDescription("Digits are okay.");
+            yield return new TestCaseData(ascii.GetBytes("ERRO"), true);
+        }
+        
+        [TestCaseSource("ReadDwordStringAsEnumTestSource1")]
+        public void ReadDwordStringAsEnum_WhenDataByteCountIsGeq4_ThrowsSidByteParserException_IffDwordStringDoesNotMatchAnyEnumMember(
+            byte[] dataBytes,
+            bool exceptionIsExpected)
+        {
+            //// Consider checking if dataBytes is of ample length (>= 4) here?
+
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            IResolveConstraint fulfillsConstraint = exceptionIsExpected ?
+                (IResolveConstraint)Throws.InstanceOf<SidByteParserException>() : Throws.Nothing;
+            Assert.That(
+                () => parser.ReadDwordStringAsEnum<SidByteParserAndWriterTestEnum>(),
+                fulfillsConstraint);
+        }
+
+        [Test]
+        public void ReadDwordStringAsEnum_DecreasesBytesLeftBy4(
+            [Values(4, 5, 20)] int dataByteCount)
+        {
+            // AAAA is a member of the enum
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataByteRepeated(65, dataByteCount);
+            int oldAmountOfBytesLeft = parser.AmountOfBytesLeft;
+            parser.ReadDwordStringAsEnum<SidByteParserAndWriterTestEnum>();
+            Assert.That(parser.AmountOfBytesLeft, Is.EqualTo(oldAmountOfBytesLeft - 4));
+        }
+
+        private IEnumerable<TestCaseData> ReadDwordStringAsEnumTestSource2()
+        {
+            yield return new TestCaseData(new byte[] { 0x41, 65, -(~64), (int)'A' })
+                .Returns(SidByteParserAndWriterTestEnum.Aaaa)
+                .SetDescription("For fun.");
+
+            Encoding ascii = Encoding.ASCII;
+            yield return new TestCaseData(ascii.GetBytes("ABBA"))
+                .Returns(SidByteParserAndWriterTestEnum.Abba)
+                .SetDescription("The case should be ignored.");
+            yield return new TestCaseData(ascii.GetBytes("SLAP"))
+                .Returns(SidByteParserAndWriterTestEnum.Pals)
+                .SetDescription(TheValueShouldBeReadInLittleEndian);
+            yield return new TestCaseData(ascii.GetBytes("F33B"))
+                .Returns(SidByteParserAndWriterTestEnum.B33f)
+                .SetDescription("Digits are okay.");
+        }
+
+        [TestCaseSource("ReadDwordStringAsEnumTestSource2")]
+        public SidByteParserAndWriterTestEnum ReadDwordStringAsEnum(byte[] dataBytes)
+        {
+            SidByteParser parser = CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+            return parser.ReadDwordStringAsEnum<SidByteParserAndWriterTestEnum>();
+        }
+
         private byte[] GetRandomByteArray(int count)
         {
             byte[] bytes = new byte[count];
@@ -499,6 +582,12 @@
         private SidByteParser CreateSidByteParserWithRandomDataBytes(int dataByteCount)
         {
             byte[] dataBytes = GetRandomByteArray(dataByteCount);
+            return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
+        }
+
+        private SidByteParser CreateSidByteParserWithSpecifiedDataByteRepeated(byte dataByte, int count)
+        {
+            byte[] dataBytes = Enumerable.Repeat<byte>(dataByte, count).ToArray();
             return CreateSidByteParserWithSpecifiedDataBytes(dataBytes);
         }
 
