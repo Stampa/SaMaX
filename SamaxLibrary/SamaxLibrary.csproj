@@ -90,6 +90,7 @@
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />
+    <Compile Include="Sid\PingServerToClientSidMessage.cs" />
     <Compile Include="Sid\PlatformID.cs" />
     <Compile Include="Sid\ProductID.cs" />
     <Compile Include="Sid\SidByteParser.cs" />

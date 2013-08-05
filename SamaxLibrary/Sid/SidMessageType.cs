@@ -11,6 +11,11 @@
     public enum SidMessageType
     {
         /// <summary>
+        /// The type corresponding to SID_PING messages.
+        /// </summary>
+        Ping = 0x25,
+
+        /// <summary>
         /// The type corresponding to SID_AUTH_INFO messages.
         /// </summary>
         AuthInfo = 0x50

@@ -62,6 +62,7 @@
     <Compile Include="AuthInfoClientToServerSidMessageTestFixture.cs" />
     <Compile Include="AuthInfoServerToClientSidMessageTestFixture.cs" />
     <Compile Include="SidMessageFactoryTestFixture.cs" />
+    <Compile Include="PingServerToClientSidMessageTestFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SamaxLibrary\SamaxLibrary.csproj">

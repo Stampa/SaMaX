@@ -65,6 +65,8 @@
             Assert.That(message.Bytes, Is.EqualTo(validMessageBytes));
             Assert.That(message.LogonType, Is.EqualTo(LogonType.BrokenSha1));
             Assert.That(message.MpqFileName, Is.EqualTo("ver-IX86-6.mpq"));
+
+            // This is not known to be correct
             Assert.That(message.MpqFileTime, Is.EqualTo(new DateTime(2007, 03, 05, 22, 48, 30)));
             Assert.That(message.ServerToken, Is.EqualTo(0x5D634A3E));
             Assert.That(message.UdpValue, Is.EqualTo(0x50818));

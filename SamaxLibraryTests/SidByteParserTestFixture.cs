@@ -593,7 +593,7 @@
 
         private SidByteParser CreateSidByteParserWithSpecifiedDataBytes(params byte[] dataBytes)
         {
-            var bytes = new System.Collections.Generic.List<byte>() { 0, 0, 0, 0 };
+            var bytes = new List<byte>() { 0, 0, 0, 0 };
             bytes.AddRange(dataBytes);
             return CreateSidByteParser(bytes.ToArray());
         }
