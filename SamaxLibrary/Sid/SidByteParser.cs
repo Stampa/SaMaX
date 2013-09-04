@@ -328,6 +328,30 @@
         }
 
         /// <summary>
+        /// Reads a BSHA-1 hash.
+        /// </summary>
+        /// <returns>The BSHA-1 hash that was read.</returns>
+        /// <exception cref="SidByteParserException">There are fewer than
+        /// <see cref="BrokenSha1Hash.HashSize"/> bytes left in the array of bytes to parse.
+        /// </exception>
+        public BrokenSha1Hash ReadBrokenSha1Hash()
+        {
+            const int AmountOfBytesToRead = BrokenSha1Hash.HashSize;
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
+
+            if (this.AmountOfBytesLeft < AmountOfBytesToRead)
+            {
+                throw new SidByteParserException(
+                    String.Format(
+                        "There are too few bytes left ({0}) to read a BSHA-1 hash.",
+                        this.AmountOfBytesLeft));
+            }
+
+            byte[] hashBytes = this.ReadByteArray(AmountOfBytesToRead);
+            return new BrokenSha1Hash(hashBytes);
+        }
+
+        /// <summary>
         /// Contains the object invariants for the <see cref="SidByteParser"/> class.
         /// </summary>
         [ContractInvariantMethod]

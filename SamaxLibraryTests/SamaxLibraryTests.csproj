@@ -64,6 +64,7 @@
     <Compile Include="SidMessageFactoryTestFixture.cs" />
     <Compile Include="PingServerToClientSidMessageTestFixture.cs" />
     <Compile Include="PingClientToServerSidMessageTestFixture.cs" />
+    <Compile Include="LogonResponse2ClientToServerSidMessageTestFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SamaxLibrary\SamaxLibrary.csproj">

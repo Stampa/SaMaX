@@ -169,6 +169,24 @@
         }
 
         /// <summary>
+        /// Appends a BSHA-1 hash to the bytes.
+        /// </summary>
+        /// <param name="value">The BSHA-1 hash to append to the bytes.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.
+        /// </exception>
+        public void AppendBrokenSha1Hash(BrokenSha1Hash value)
+        {
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(BrokenSha1Hash.HashSize);
+
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            this.AppendByteArray(value.Bytes);
+        }
+
+        /// <summary>
         /// Contains the object invariants for the <see cref="SidByteWriter"/> class.
         /// </summary>
         [ContractInvariantMethod]

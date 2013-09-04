@@ -88,6 +88,9 @@
     <Compile Include="MessageDirection.cs" />
     <Compile Include="Sid\AuthInfoClientToServerSidMessage.cs" />
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
+    <Compile Include="Sid\BrokenSha1.cs" />
+    <Compile Include="Sid\BrokenSha1Hash.cs" />
+    <Compile Include="Sid\LogonResponse2ClientToServerSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />
     <Compile Include="Sid\PingClientToServerSidMessage.cs" />

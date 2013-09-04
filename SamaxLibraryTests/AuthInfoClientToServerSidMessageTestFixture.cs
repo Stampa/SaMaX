@@ -32,7 +32,7 @@
         }
 
         [Test]
-        public void Constructor_WhenMessageBytesNull_ThrowsArgumentNullException()
+        public void Constructor_WhenMessageBytesIsNull_ThrowsArgumentNullException()
         {
             Assert.That(() => CreateMessage(null), Throws.TypeOf<ArgumentNullException>());
         }

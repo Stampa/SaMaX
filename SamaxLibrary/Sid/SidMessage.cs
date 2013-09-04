@@ -73,6 +73,7 @@
         /// contain the SID header, or the SID header is invalid.</exception>
         internal static SidMessageType GetSidMessageType(byte[] messageBytes)
         {
+            // Are argument checks important for internal methods?
             if (messageBytes == null)
             {
                 throw new ArgumentNullException("messageBytes");
@@ -80,6 +81,45 @@
 
             SidHeader header = new SidHeader(messageBytes);
             return header.MessageType;
+        }
+
+        /// <summary>
+        /// Assembles the bytes of a SID message by prepending an appropriate SID header to the
+        /// specified data bytes.
+        /// </summary>
+        /// <param name="dataBytes">The data bytes of the SID message.</param>
+        /// <param name="messageType">The message type of the SID message.</param>
+        /// <returns>The bytes of the SID message with the specified type and data bytes.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="dataBytes"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="messageType"/> is not a member of
+        /// the <see cref="SidMessageType"/> enumeration, or the data bytes are of too large a
+        /// size.</exception>
+        internal static byte[] GetMessageBytes(byte[] dataBytes, SidMessageType messageType)
+        {
+            // Are argument checks like this important for internal methods?
+            if (dataBytes == null)
+            {
+                throw new ArgumentNullException("dataBytes");
+            }
+
+            Type enumType = typeof(SidMessageType);
+            if (!Enum.IsDefined(enumType, messageType))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "Enumeration value {0} not defined in enumeration {1}.",
+                        messageType,
+                        enumType));
+            }
+
+            SidHeader header = new SidHeader(dataBytes, messageType);
+            byte[] headerBytes = header.HeaderBytes;
+            byte[] messageBytes = new byte[headerBytes.Length + dataBytes.Length];
+            Array.Copy(headerBytes, 0, messageBytes, 0, headerBytes.Length);
+            Array.Copy(dataBytes, 0, messageBytes, headerBytes.Length, dataBytes.Length);
+
+            return messageBytes;
         }
     }
 }

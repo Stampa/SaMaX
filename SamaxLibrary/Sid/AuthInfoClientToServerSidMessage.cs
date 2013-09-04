@@ -223,14 +223,7 @@
             writer.AppendAsciiString(country);
 
             byte[] dataBytes = writer.Bytes;
-            SidHeader header = new SidHeader(dataBytes, MessageType);
-            byte[] headerBytes = header.HeaderBytes;
-            
-            // TODO: Put this logic for combining header and data somewhere else
-            // SidHeader.GetMessageBytes maybe
-            byte[] messageBytes = new byte[headerBytes.Length + dataBytes.Length];
-            Array.Copy(headerBytes, 0, messageBytes, 0, headerBytes.Length);
-            Array.Copy(dataBytes, 0, messageBytes, headerBytes.Length, dataBytes.Length);
+            byte[] messageBytes = SidMessage.GetMessageBytes(dataBytes, MessageType);
 
             return new AuthInfoClientToServerSidMessage(messageBytes);
         }

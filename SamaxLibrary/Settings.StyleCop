@@ -2,6 +2,7 @@
   <GlobalSettings>
     <CollectionProperty Name="RecognizedWords">
       <Value>dword</Value>
+      <Value>dwords</Value>
     </CollectionProperty>
   </GlobalSettings>
 </StyleCopSettings>
