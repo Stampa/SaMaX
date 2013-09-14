@@ -82,14 +82,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteWriter.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MessageDirection.cs" />
+    <Compile Include="Sid\AuthCheckClientToServerSidMessage.cs" />
     <Compile Include="Sid\AuthInfoClientToServerSidMessage.cs" />
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
     <Compile Include="Sid\BrokenSha1.cs" />
     <Compile Include="Sid\BrokenSha1Hash.cs" />
+    <Compile Include="Sid\SidAuthCheckKeyData.cs" />
     <Compile Include="Sid\LogonResponse2ClientToServerSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />
     <Compile Include="Sid\NamespaceDoc.cs" />

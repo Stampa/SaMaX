@@ -15,8 +15,8 @@
     /// <para>
     ///     In SID messages
     ///     <list type="bullet">
-    ///         <item>strings are encoded in ASCII and are null-terminated, and</item>
-    ///         <item>most chunks larger than one byte are encoded in little-endian.</item>
+    ///         <item><description>strings are encoded in ASCII and are null-terminated, and</description></item>
+    ///         <item><description>most chunks larger than one byte are encoded in little-endian.</description></item>
     ///     </list>
     /// </para>
     /// <para>

@@ -16,9 +16,9 @@
     public class SidByteWriter
     {
         /// <summary>
-        /// The underlying list of bytes to which bytes are written.
+        /// The underlying writer.
         /// </summary>
-        private readonly List<byte> bytes;
+        private ByteWriter writer;
 
         /// <summary>
         /// Gets the array of bytes that have been written.
@@ -27,22 +27,16 @@
         {
             get
             {
-                return this.bytes.ToArray();
+                return this.writer.Bytes;
             }
         }
-
-        /// <summary>
-        /// A converter that is used in the writing.
-        /// </summary>
-        private LittleEndianBitConverter converter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SidByteWriter"/> class.
         /// </summary>
         public SidByteWriter()
         {
-            this.bytes = new List<byte>();
-            this.converter = new LittleEndianBitConverter();
+            this.writer = new ByteWriter(true);
         }
 
         /// <summary>
@@ -54,8 +48,7 @@
         {
             this.EnsuresSpecifiedAmountOfBytesAreWritten(4);
 
-            byte[] bytesToAppend = this.converter.GetBytes(value);
-            this.bytes.AddRange(bytesToAppend);
+            this.writer.AppendInt32(value);
         }
 
         /// <summary>
@@ -93,7 +86,7 @@
                 bytesToAppend.Length == 4,
                 "Encoded 4-character ASCII string into a byte array that was not of length 4.");
             Array.Reverse(bytesToAppend); // Go from big-endian to little-endian
-            this.bytes.AddRange(bytesToAppend);
+            this.writer.AppendByteArray(bytesToAppend);
         }
 
         /// <summary>
@@ -138,16 +131,14 @@
         /// terminator.</remarks>
         public void AppendAsciiString(string value)
         {
+            this.EnsuresSpecifiedAmountOfBytesAreWritten(value.Length + 1);
+
             if (value == null)
             {
                 throw new ArgumentNullException("value");
             }
 
-            //// TODO: Validate that the string contains only ASCII symbols?
-            //// Non-ASCII symbols seem to turn into question marks (value 63)
-            string nullTerminatedValue = value + '\0';
-            byte[] bytesToAppend = Encoding.ASCII.GetBytes(nullTerminatedValue);
-            this.bytes.AddRange(bytesToAppend);
+            this.writer.AppendNullTerminatedAsciiString(value);
         }
 
         /// <summary>
@@ -165,7 +156,7 @@
                 throw new ArgumentNullException("value");
             }
 
-            this.bytes.AddRange(value);
+            this.writer.AppendByteArray(value);
         }
 
         /// <summary>
@@ -192,8 +183,7 @@
         [ContractInvariantMethod]
         private void SidByteWriterInvariants()
         {
-            Contract.Invariant(this.bytes != null);
-            Contract.Invariant(this.converter != null);
+            Contract.Invariant(this.writer != null);
         }
 
         /// <summary>
@@ -203,7 +193,6 @@
         [ContractAbbreviator]
         private void EnsuresSpecifiedAmountOfBytesAreWritten(int count)
         {
-            Contract.Ensures(this.bytes.Count == Contract.OldValue<int>(this.bytes.Count) + count);
             Contract.Ensures(this.Bytes.Length == Contract.OldValue<int>(this.Bytes.Length) + count);
         }
     }

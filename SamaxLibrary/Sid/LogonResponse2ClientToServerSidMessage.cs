@@ -156,9 +156,7 @@
         {
             byte[] firstPassBytes = BrokenSha1.ComputeHashOfAsciiString(password);
 
-            // TODO: Is it okay to use a SidByteWriter here? Strictly speaking, it should be some
-            // general-purpose byte writer.
-            SidByteWriter writer = new SidByteWriter();
+            ByteWriter writer = new ByteWriter(true);
             writer.AppendInt32(clientToken);
             writer.AppendInt32(serverToken);
             writer.AppendByteArray(firstPassBytes);

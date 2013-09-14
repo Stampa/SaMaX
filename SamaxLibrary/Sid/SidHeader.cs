@@ -15,14 +15,14 @@
     /// SID headers are 4 bytes long and of the following form:
     /// <list type="table">
     ///     <listheader>
-    ///         <term>Byte 0</term>
-    ///         <term>Byte 1</term>
-    ///         <term>Byte 2-3</term>
+    ///         <description>Byte 0</description>
+    ///         <description>Byte 1</description>
+    ///         <description>Byte 2-3</description>
     ///     </listheader>
     ///     <item>
-    ///         <term>0xFF</term>
-    ///         <term>Message type</term>
-    ///         <term>Message length (in bytes, including this header)</term>
+    ///         <description>0xFF</description>
+    ///         <description>Message type</description>
+    ///         <description>Message length (in bytes, including this header)</description>
     ///     </item>
     /// </list>
     /// The message length is encoded in little-endian.

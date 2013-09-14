@@ -3,6 +3,8 @@
     <CollectionProperty Name="RecognizedWords">
       <Value>dword</Value>
       <Value>dwords</Value>
+      <Value>Starcraft</Value>
+      <Value>Warcraft</Value>
     </CollectionProperty>
   </GlobalSettings>
 </StyleCopSettings>

@@ -23,6 +23,11 @@
         /// <summary>
         /// The type corresponding to SID_AUTH_INFO messages.
         /// </summary>
-        AuthInfo = 0x50
+        AuthInfo = 0x50,
+
+        /// <summary>
+        /// The type corresponding to SID_AUTH_CHECK messages.
+        /// </summary>
+        AuthCheck = 0x51
     }
 }
