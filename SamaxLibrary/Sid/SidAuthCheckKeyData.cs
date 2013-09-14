@@ -60,8 +60,8 @@
         /// </exception>
         public SidAuthCheckKeyData(byte[] keyDataBytes)
         {
-            //// TODO: Is it okay to use SidByteParser here? Hell no!
-            SidByteParser parser = new SidByteParser(keyDataBytes);
+            //// TODO: Is it okay to use SidByteParser here? Probably!
+            SidByteParser parser = new SidByteParser(keyDataBytes, false);
         }
     }
 }

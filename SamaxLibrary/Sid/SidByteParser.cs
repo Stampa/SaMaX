@@ -72,18 +72,21 @@
         /// </summary>
         /// <param name="bytesToParse">The array of bytes to parse, <em>including</em> the SID
         /// header.</param>
+        /// <param name="skipHeader">Determines whether <see cref="SidHeader.HeaderLength"/> bytes
+        /// should be skipped.</param>
         /// <exception cref="ArgumentNullException"><paramref name="bytesToParse"/> is <c>null</c>.
         /// </exception>
-        /// <exception cref="ArgumentException"><paramref name="bytesToParse"/> is too small to
-        /// contain a SID header (see <see cref="SidHeader.HeaderLength"/>).</exception>
-        public SidByteParser(byte[] bytesToParse)
+        /// <exception cref="ArgumentException"><paramref name="skipHeader"/> is <c>true</c> and
+        /// <paramref name="bytesToParse"/> is too small to contain a SID header (see
+        /// <see cref="SidHeader.HeaderLength"/>).</exception>
+        public SidByteParser(byte[] bytesToParse, bool skipHeader = true)
         {
             if (bytesToParse == null)
             {
                 throw new ArgumentNullException("bytesToParse");
             }
 
-            if (bytesToParse.Length < SidHeader.HeaderLength)
+            if (skipHeader && bytesToParse.Length < SidHeader.HeaderLength)
             {
                 throw new ArgumentException(
                     String.Format(
@@ -92,7 +95,7 @@
             }
 
             this.bytes = bytesToParse;
-            this.index = SidHeader.HeaderLength;
+            this.index = skipHeader ? SidHeader.HeaderLength : 0;
             this.converter = new LittleEndianBitConverter();
         }
 
