@@ -109,7 +109,9 @@
                 var keyDataBuilder = new ReadOnlyCollectionBuilder<SidAuthCheckKeyData>();
                 for (int i = 0; i < this.AmountOfCDKeys; i++)
                 {
-                    // UNDONE:   
+                    byte[] keyDataBytes = parser.ReadByteArray(SidAuthCheckKeyData.LengthInBytes);
+                    SidAuthCheckKeyData keyData = new SidAuthCheckKeyData(keyDataBytes);
+                    keyDataBuilder.Add(keyData);
                 }
             }
             catch (SidByteParserException ex)
