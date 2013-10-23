@@ -8,6 +8,7 @@
     using System.Net.Sockets;
     using System.Text;
     using System.Threading.Tasks;
+    using SamaxLibrary.Sid;
 
     /// <summary>
     /// This class represents a client for the SID protocol.
@@ -84,6 +85,81 @@
             }
 
             this.IsConnected = true;
+        }
+
+        /// <summary>
+        /// Authenticates the client.
+        /// </summary>
+        /// <param name="productID">The product ID.</param>
+        /// <param name="version">The version.</param>
+        /// <param name="localIPAddress">The local IP address to state.</param>
+        /// <exception cref="InvalidOperationException">The client is not connected.</exception>
+        /// <exception cref="ClientException">An error occurred.</exception>
+        /// TODO: This method is not very flexible in terms of the order of messages ...
+        public void Authenticate(ProductID productID, int version, byte[] localIPAddress)
+        {
+            if (!this.IsConnected)
+            {
+                throw new InvalidOperationException("The client is not connected.");
+            }
+
+            // TODO: Arbitrary size, and what happens if more than this is sent?
+            // Exception could _but needs not_ be thrown by SID message classes
+            // An easy fix would be allow at most BufferSize-1 bytes per message and
+            // crash if the entire buffer is filled
+            const int BufferSize = 1000;
+            byte[] buffer = new byte[BufferSize];
+
+            this.SendCsAuthInfo(productID, version, localIPAddress);
+            var scPingMessage = this.ReceiveScPing(buffer);
+            this.SendCsPing(scPingMessage.PingValue);
+        }
+
+        /// <summary>
+        /// Sends a client-to-server authentication info message.
+        /// </summary>
+        /// <param name="productID">The product ID</param>
+        /// <param name="version">The version.</param>
+        /// <param name="localIPAddress">The local IP address.</param>
+        private void SendCsAuthInfo(ProductID productID, int version, byte[] localIPAddress)
+        {
+            var csAuthInfomessage = AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
+                productID,
+                version,
+                localIPAddress);
+            this.stream.Write(csAuthInfomessage.Bytes, 0, csAuthInfomessage.Bytes.Length);
+        }
+
+        /// <summary>
+        /// Receives a server-to-client ping message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client ping message</returns>
+        private PingServerToClientSidMessage ReceiveScPing(byte[] buffer)
+        {
+            int count = this.stream.Read(buffer, 0, buffer.Length);
+            byte[] messageBytes = buffer.Take(count).ToArray();
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+
+            if (message.MessageType != SidMessageType.Ping)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not the ping type.",
+                        message.MessageType));
+            }
+
+            return (PingServerToClientSidMessage)message;
+        }
+
+        /// <summary>
+        /// Sends a client-to-server ping message. 
+        /// </summary>
+        /// <param name="pingValue">The ping value received from the server earlier.</param>
+        private void SendCsPing(Int32 pingValue)
+        {
+            var csPingMessage = PingClientToServerSidMessage.CreateFromHighLevelData(pingValue);
+            this.stream.Write(csPingMessage.Bytes, 0, csPingMessage.Bytes.Length);
         }
     }
 }

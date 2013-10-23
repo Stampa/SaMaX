@@ -107,6 +107,9 @@
             SidMessage message;
             switch (messageType)
             {
+                case SidMessageType.Ping:
+                    message = new PingServerToClientSidMessage(messageBytes);
+                    break;
                 case SidMessageType.AuthInfo:
                     message = new AuthInfoServerToClientSidMessage(messageBytes);
                     break;

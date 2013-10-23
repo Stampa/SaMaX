@@ -58,5 +58,23 @@
                 throw new ArgumentException("There were unexpected bytes at the end of the message.");
             }
         }
+
+        /// <summary>
+        /// Creates an instance of the <see cref="PingClientToServerSidMessage"/> class from
+        /// high-level data.
+        /// </summary>
+        /// <param name="pingValue">The ping value (typically received from the server).</param>
+        /// <returns>An instance of the <see cref="PingClientToServerSidMessage"/> class with the
+        /// specified data.</returns>
+        public static PingClientToServerSidMessage CreateFromHighLevelData(Int32 pingValue)
+        {
+            SidByteWriter writer = new SidByteWriter();
+            writer.AppendInt32(pingValue);
+
+            byte[] dataBytes = writer.Bytes;
+            byte[] messageBytes = SidMessage.GetMessageBytes(dataBytes, MessageType);
+
+            return new PingClientToServerSidMessage(messageBytes);
+        }
     }
 }
