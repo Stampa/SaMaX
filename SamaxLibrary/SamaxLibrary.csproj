@@ -85,7 +85,7 @@
     <Compile Include="ByteWriter.cs" />
     <Compile Include="Clients\ClientException.cs" />
     <Compile Include="Clients\NamespaceDoc.cs" />
-    <Compile Include="Clients\SidClient.cs" />
+    <Compile Include="Clients\D2xpSidClient.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

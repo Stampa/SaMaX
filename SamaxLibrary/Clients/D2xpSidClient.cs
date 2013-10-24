@@ -10,11 +10,16 @@
     using System.Threading.Tasks;
     using SamaxLibrary.Sid;
 
+    /* TODO:
+     * Beware of ArgumentExceptions from the message factory!
+     *      The SidHeader class as well!
+     */
+
     /// <summary>
     /// This class represents a client for the SID protocol.
     /// </summary>
     /// <seealso cref="SamaxLibrary.Sid"/>
-    public class SidClient
+    public class D2xpSidClient
     {
         /// <summary>
         /// The underlying network stream.
@@ -27,9 +32,9 @@
         public bool IsConnected { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SidClient"/> class.
+        /// Initializes a new instance of the <see cref="D2xpSidClient"/> class.
         /// </summary>
-        public SidClient()
+        public D2xpSidClient()
         {
             this.IsConnected = false;
         }
@@ -90,13 +95,12 @@
         /// <summary>
         /// Authenticates the client.
         /// </summary>
-        /// <param name="productID">The product ID.</param>
         /// <param name="version">The version.</param>
         /// <param name="localIPAddress">The local IP address to state.</param>
         /// <exception cref="InvalidOperationException">The client is not connected.</exception>
         /// <exception cref="ClientException">An error occurred.</exception>
         /// TODO: This method is not very flexible in terms of the order of messages ...
-        public void Authenticate(ProductID productID, int version, byte[] localIPAddress)
+        public void Authenticate(int version, byte[] localIPAddress)
         {
             if (!this.IsConnected)
             {
@@ -110,23 +114,56 @@
             const int BufferSize = 1000;
             byte[] buffer = new byte[BufferSize];
 
-            this.SendCsAuthInfo(productID, version, localIPAddress);
+            this.SendCsAuthInfo(version, localIPAddress);
             var scPingMessage = this.ReceiveScPing(buffer);
             this.SendCsPing(scPingMessage.PingValue);
+            var scAuthInfoMessage = this.ReceiveScAuthInfo(buffer);
+        }
+
+        /// <summary>
+        /// Reads the bytes of the next message from the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream from which to read.</param>
+        /// <param name="buffer">The buffer used to receive the bytes.</param>
+        /// <returns>The bytes composing the next message in the stream.</returns>
+        private byte[] ReadMessageBytes(NetworkStream stream, byte[] buffer)
+        {
+            // Read header bytes first to determine how much more to read
+            int amountOfBytesRead = stream.Read(buffer, 0, SidHeader.HeaderLength);
+            if (amountOfBytesRead < SidHeader.HeaderLength)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "Read too few bytes ({0}) to compose a SID header ({1} required).",
+                        amountOfBytesRead,
+                        SidHeader.HeaderLength));
+            }
+
+            byte[] headerBytes = buffer.Take(SidHeader.HeaderLength).ToArray();
+            SidHeader header = new SidHeader(headerBytes);
+            amountOfBytesRead += stream.Read(buffer, SidHeader.HeaderLength, header.MessageLength - SidHeader.HeaderLength);
+            if (amountOfBytesRead != header.MessageLength)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "Read too few bytes ({0}) to compose the entire message ({1} required).",
+                        amountOfBytesRead,
+                        header.MessageLength));
+            }
+
+            return buffer.Take(amountOfBytesRead).ToArray();
         }
 
         /// <summary>
         /// Sends a client-to-server authentication info message.
         /// </summary>
-        /// <param name="productID">The product ID</param>
         /// <param name="version">The version.</param>
         /// <param name="localIPAddress">The local IP address.</param>
-        private void SendCsAuthInfo(ProductID productID, int version, byte[] localIPAddress)
+        private void SendCsAuthInfo(int version, byte[] localIPAddress)
         {
-            var csAuthInfomessage = AuthInfoClientToServerSidMessage.CreateFromHighLevelData(
-                productID,
-                version,
-                localIPAddress);
+            var csAuthInfomessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
+                SidMessageType.AuthInfo,
+                new object[] { ProductID.D2xp, version, localIPAddress });
             this.stream.Write(csAuthInfomessage.Bytes, 0, csAuthInfomessage.Bytes.Length);
         }
 
@@ -135,18 +172,20 @@
         /// </summary>
         /// <param name="buffer">The buffer used to receive the message bytes.</param>
         /// <returns>The received server-to-client ping message</returns>
+        /// <exception cref="ClientException">The message received is not of type
+        /// <see cref="SidMessageType.Ping"/></exception>
         private PingServerToClientSidMessage ReceiveScPing(byte[] buffer)
         {
-            int count = this.stream.Read(buffer, 0, buffer.Length);
-            byte[] messageBytes = buffer.Take(count).ToArray();
+            byte[] messageBytes = this.ReadMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
 
             if (message.MessageType != SidMessageType.Ping)
             {
                 throw new ClientException(
                     String.Format(
-                        "The message type ({0}) was not the ping type.",
-                        message.MessageType));
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.Ping));
             }
 
             return (PingServerToClientSidMessage)message;
@@ -158,8 +197,53 @@
         /// <param name="pingValue">The ping value received from the server earlier.</param>
         private void SendCsPing(Int32 pingValue)
         {
-            var csPingMessage = PingClientToServerSidMessage.CreateFromHighLevelData(pingValue);
+            var csPingMessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
+                SidMessageType.Ping,
+                new object[] { pingValue });
             this.stream.Write(csPingMessage.Bytes, 0, csPingMessage.Bytes.Length);
+        }
+
+        /// <summary>
+        /// Receives a server-to-client authentication info message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client authentication info message.</returns>
+        /// <exception cref="ClientException">The message received is not of type
+        /// <see cref="SidMessageType.AuthInfo"/></exception>
+        private AuthInfoServerToClientSidMessage ReceiveScAuthInfo(byte[] buffer)
+        {
+            byte[] messageBytes = this.ReadMessageBytes(this.stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            if (message.MessageType != SidMessageType.AuthInfo)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.AuthInfo));
+            }
+
+            var scAuthInfoMessage = (AuthInfoServerToClientSidMessage)message;
+            this.ValidateScAuthInfo(scAuthInfoMessage);
+            return scAuthInfoMessage;
+        }
+
+        /// <summary>
+        /// Validates a server-to-client authentication info message by throwing exceptions if it
+        /// is invalid.
+        /// </summary>
+        /// <param name="message">The authentication info message to validate.</param>
+        /// <exception cref="ClientException">The logon type is not broken SHA-1.</exception>
+        private void ValidateScAuthInfo(AuthInfoServerToClientSidMessage message)
+        {
+            if (message.LogonType != LogonType.BrokenSha1)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "Received logon type was {0}, not {1}.",
+                        message.LogonType,
+                        LogonType.BrokenSha1));
+            }
         }
     }
 }

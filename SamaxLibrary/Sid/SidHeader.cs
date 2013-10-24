@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using MiscUtil.Conversion;
 
@@ -103,6 +104,7 @@
         /// <summary>
         /// Gets the message length, in bytes.
         /// </summary>
+        /// TODO: Including the header I suppose. Clarify!
         public UInt16 MessageLength
         {
             get
@@ -112,70 +114,58 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SidHeader"/> class from the bytes that
-        /// compose the entire SID message, including the header.
+        /// Initializes a new instance of the <see cref="SidHeader"/> class from the bytes that compose
+        /// the header.
         /// </summary>
-        /// <param name="messageBytes">An array of bytes that composes the SID message whose header
-        /// to construct.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
-        /// </exception>
-        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> is too small to
-        /// contain the SID header, or the SID header is invalid for the specified message.
-        /// </exception>
-        public SidHeader(byte[] messageBytes)
+        /// <param name="headerBytes">The bytes that compose the SID header.</param>
+        /// <returns>An instance of the <see cref="SidHeader"/></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="headerBytes"/> is
+        /// <see langword="null"/>.</exception>
+        /// TODO: Consider making this a constructor and the one that takes the message bytes a static method.
+        public SidHeader(byte[] headerBytes)
         {
-            if (messageBytes == null)
+            if (headerBytes == null)
             {
-                throw new ArgumentNullException("messageBytes");
+                throw new ArgumentNullException("headerBytes");
             }
 
-            if (messageBytes.Length < HeaderLength)
+            if (headerBytes.Length != HeaderLength)
             {
                 throw new ArgumentException(
                     String.Format(
-                        "The length of the array ({0}) is too small to contain the SID header.",
-                        messageBytes.Length),
-                    "messageBytes");
+                        "The length of the array is {0}, not {1}.",
+                        headerBytes.Length,
+                        HeaderLength));
             }
 
-            if (messageBytes[DummyIndex] != DummyValue)
+            if (headerBytes[DummyIndex] != DummyValue)
             {
                 throw new ArgumentException(
                     String.Format(
                         "The dummy value (0x{0:X}) is not 0x{1:X}.",
-                        messageBytes[DummyIndex],
-                        DummyValue));
+                        headerBytes[DummyIndex],
+                        DummyValue),
+                    "headerBytes");
             }
 
-            SidMessageType messageType = (SidMessageType)messageBytes[MessageTypeIndex];
+            SidMessageType messageType = (SidMessageType)headerBytes[MessageTypeIndex];
             if (!Enum.IsDefined(typeof(SidMessageType), messageType))
             {
                 throw new ArgumentException(
                     String.Format(
                         "The byte corresponding to the SID message type ({0}) does not represent a valid SID message type.",
                         messageType),
-                    "messageBytes");
+                    "headerBytes");
             }
 
             this.messageType = messageType;
 
-            LittleEndianBitConverter converter = new LittleEndianBitConverter();
-            UInt16 supposedMessageLength = converter.ToUInt16(messageBytes, MessageLengthIndex);
-            int actualMessageLength = messageBytes.Length;
-            if (supposedMessageLength != actualMessageLength)
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The message length as specified in the SID header ({0}) is different from the actual length ({1}).",
-                        supposedMessageLength,
-                        actualMessageLength));
-            }
+            var converter = new LittleEndianBitConverter();
+            UInt16 messageLength = converter.ToUInt16(headerBytes, MessageLengthIndex);
+            this.messageLength = messageLength;
 
-            this.messageLength = supposedMessageLength;
-
-            byte[] headerBytes = new byte[HeaderLength];
-            Array.Copy(messageBytes, headerBytes, HeaderLength);
-            this.headerBytes = new ReadOnlyCollection<byte>(headerBytes);
+            var builder = new ReadOnlyCollectionBuilder<byte>(headerBytes);
+            this.headerBytes = builder.ToReadOnlyCollection();
         }
 
         /// <summary>
@@ -245,6 +235,53 @@
             this.messageType = messageType;
             this.messageLength = messageLength;
             this.headerBytes = GetHeaderBytes(messageType, messageLength);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="SidHeader"/> class from the bytes that compose
+        /// the entire SID message, including the header.
+        /// </summary>
+        /// <param name="messageBytes">An array of bytes that composes the SID message whose header
+        /// to create.</param>
+        /// <returns>An instance of the <see cref="SidHeader"/> class with data from the specified
+        /// message bytes.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="messageBytes"/> is too small to
+        /// contain the SID header, or the bytes corresponding to the SID header are invalid for
+        /// the specified message.
+        /// </exception>
+        public static SidHeader CreateFromMessageBytes(byte[] messageBytes)
+        {
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
+            if (messageBytes.Length < HeaderLength)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The length of the array ({0}) is too small to contain the SID header.",
+                        messageBytes.Length),
+                    "messageBytes");
+            }
+
+            byte[] headerBytes = messageBytes.Take(HeaderLength).ToArray();
+            SidHeader header = new SidHeader(headerBytes);
+
+            int supposedMessageLength = header.MessageLength;
+            int actualMessageLength = messageBytes.Length;
+            if (supposedMessageLength != actualMessageLength)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The message length as specified in the SID header ({0}) is different from the actual length ({1}).",
+                        supposedMessageLength,
+                        actualMessageLength));
+            }
+
+            return header;
         }
 
         /// <summary>

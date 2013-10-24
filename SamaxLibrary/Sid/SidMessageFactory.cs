@@ -156,6 +156,9 @@
                 case SidMessageType.AuthInfo:
                     sidMessageClassType = typeof(AuthInfoClientToServerSidMessage);
                     break;
+                case SidMessageType.Ping:
+                    sidMessageClassType = typeof(PingClientToServerSidMessage);
+                    break;
                 default:
                     Debug.Fail(
                         String.Format(

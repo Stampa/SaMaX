@@ -47,7 +47,7 @@
                 throw new ArgumentNullException("messageBytes");
             }
 
-            SidHeader header = new SidHeader(messageBytes);
+            SidHeader header = SidHeader.CreateFromMessageBytes(messageBytes);
             if (messageType != header.MessageType)
             {
                 throw new ArgumentException(
@@ -79,7 +79,7 @@
                 throw new ArgumentNullException("messageBytes");
             }
 
-            SidHeader header = new SidHeader(messageBytes);
+            SidHeader header = SidHeader.CreateFromMessageBytes(messageBytes);
             return header.MessageType;
         }
 
