@@ -114,7 +114,7 @@
                     message = new AuthInfoServerToClientSidMessage(messageBytes);
                     break;
                 case SidMessageType.AuthCheck:
-                    message = new AuthCheckClientToServerSidMessage(messageBytes);
+                    message = new AuthCheckServerToClientSidMessage(messageBytes);
                     break;
                 default:
                     Debug.Fail(
