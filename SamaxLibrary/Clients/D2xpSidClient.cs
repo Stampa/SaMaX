@@ -13,6 +13,8 @@
     /* TODO:
      * Beware of ArgumentExceptions from the message factory!
      *      The SidHeader class as well!
+     *      
+     * Make this class disposable to dispose of the stream properly
      */
 
     /// <summary>

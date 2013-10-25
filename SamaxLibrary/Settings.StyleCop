@@ -1,6 +1,7 @@
 <StyleCopSettings Version="105">
   <GlobalSettings>
     <CollectionProperty Name="RecognizedWords">
+      <Value>dll</Value>
       <Value>dword</Value>
       <Value>dwords</Value>
       <Value>Starcraft</Value>
@@ -11,7 +12,10 @@
     <Analyzer AnalyzerId="StyleCop.CSharp.NamingRules">
       <AnalyzerSettings>
         <CollectionProperty Name="Hungarian">
+          <Value>bn</Value>
+          <Value>cd</Value>
           <Value>cs</Value>
+          <Value>d2</Value>
           <Value>sc</Value>
         </CollectionProperty>
       </AnalyzerSettings>

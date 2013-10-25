@@ -1,18 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A066DED8-7B61-4D9D-BA8C-4F068EA9272C}</ProjectGuid>
+    <ProjectGuid>{76FFD2F2-44AD-4AEC-BA36-7C1FFACDD356}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SamaxLibrary</RootNamespace>
-    <AssemblyName>SamaxLibrary</AssemblyName>
+    <RootNamespace>BNSharp</RootNamespace>
+    <AssemblyName>BNSharp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,12 +18,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;UNSAFE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\SamaxLibrary.XML</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
@@ -36,7 +33,7 @@
     <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
     <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
     <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
-    <CodeContractsMissingPublicRequiresAsWarnings>False</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
     <CodeContractsInferRequires>True</CodeContractsInferRequires>
     <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
     <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
@@ -57,7 +54,7 @@
     <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
     <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -67,12 +64,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MiscUtil">
-      <HintPath>..\Libraries\MiscUtil\MiscUtil.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -82,42 +75,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ByteWriter.cs" />
-    <Compile Include="Clients\ClientException.cs" />
-    <Compile Include="Clients\D2xpFileTriple.cs" />
-    <Compile Include="Clients\NamespaceDoc.cs" />
-    <Compile Include="Clients\D2xpSidClient.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="NamespaceDoc.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\CdKeyDecoder.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\CheckRevision.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\CheckRevisionCompiler.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\CheckRevisionFormulaTracker.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\CheckRevisionStream.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\HeapPtr.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\LockdownCrev.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\LockdownHeap.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\LockdownSha1.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\Native.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\PeFileLoader.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\PeFileReader.cs" />
+    <Compile Include="BNSharp\BattleNet\Core\XSha1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MessageDirection.cs" />
-    <Compile Include="Sid\AuthCheckClientToServerSidMessage.cs" />
-    <Compile Include="Sid\AuthInfoClientToServerSidMessage.cs" />
-    <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
-    <Compile Include="Sid\BrokenSha1.cs" />
-    <Compile Include="Sid\BrokenSha1Hash.cs" />
-    <Compile Include="Sid\FileTriple.cs" />
-    <Compile Include="Sid\SidAuthCheckKeyData.cs" />
-    <Compile Include="Sid\LogonResponse2ClientToServerSidMessage.cs" />
-    <Compile Include="Sid\LogonType.cs" />
-    <Compile Include="Sid\NamespaceDoc.cs" />
-    <Compile Include="Sid\PingClientToServerSidMessage.cs" />
-    <Compile Include="Sid\PingServerToClientSidMessage.cs" />
-    <Compile Include="Sid\PlatformID.cs" />
-    <Compile Include="Sid\ProductID.cs" />
-    <Compile Include="Sid\SidByteParser.cs" />
-    <Compile Include="Sid\SidByteParserException.cs" />
-    <Compile Include="Sid\SidByteWriter.cs" />
-    <Compile Include="Sid\SidHeader.cs" />
-    <Compile Include="Sid\SidMessage.cs" />
-    <Compile Include="Sid\SidMessageFactory.cs" />
-    <Compile Include="Sid\SidMessageType.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BNSharp\BNSharp.csproj">
-      <Project>{76ffd2f2-44ad-4aec-ba36-7c1ffacdd356}</Project>
-      <Name>BNSharp</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
