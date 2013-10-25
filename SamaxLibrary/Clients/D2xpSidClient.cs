@@ -13,8 +13,11 @@
     /* TODO:
      * Beware of ArgumentExceptions from the message factory!
      *      The SidHeader class as well!
+     *      ... and FCL classes
      *      
      * Make this class disposable to dispose of the stream properly
+     * 
+     * Put all the settings needed in some settings class
      */
 
     /// <summary>
@@ -23,6 +26,11 @@
     /// <seealso cref="SamaxLibrary.Sid"/>
     public class D2xpSidClient
     {
+        /// <summary>
+        /// The settings for the client.
+        /// </summary>
+        private D2xpClientSettings settings;
+
         /// <summary>
         /// The underlying network stream.
         /// </summary>
@@ -36,32 +44,31 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="D2xpSidClient"/> class.
         /// </summary>
-        public D2xpSidClient()
+        /// <param name="settings">The settings for the client.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="settings"/> is
+        /// <see langword="null"/>.</exception>
+        public D2xpSidClient(D2xpClientSettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException("settings");
+            }
+
+            this.settings = settings;
+
             this.IsConnected = false;
         }
 
         /// <summary>
         /// Connects the client to the specified SID server.
         /// </summary>
-        /// <param name="address">The IP address of the SID server to which to connect.</param>
-        /// <param name="port">The port of the SID server to which to connect.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="address"/> is
-        /// <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="port"/> parameter is
-        /// outside the valid range of ports.</exception>
         /// <exception cref="InvalidOperationException">The client is already connected.
         /// </exception>
         /// <exception cref="ClientException">An error occurred.</exception>
         /// TODO: Make a wrapper for System.Net.IPAddress so that consumers do not need to deal
         /// with that namespace too?
-        public void Connect(IPAddress address, int port = 6112)
+        public void Connect()
         {
-            if (address == null) 
-            {
-                throw new ArgumentNullException("address");
-            }
-
             if (this.IsConnected)
             {
                 throw new InvalidOperationException("The client is already connected.");
@@ -70,13 +77,16 @@
             try
             {
                 TcpClient client = new TcpClient();
-                client.Connect(address, port);
+                client.Connect(this.settings.IPAddress, this.settings.Port);
                 this.stream = client.GetStream();
             }
             catch (SocketException ex)
             {
                 throw new ClientException(
-                    String.Format("Could not connect to {0}:{1}.", address, port),
+                    String.Format(
+                        "Could not connect to {0}:{1}.",
+                        this.settings.IPAddress,
+                        this.settings.Port),
                     ex);
             }
 
@@ -97,12 +107,10 @@
         /// <summary>
         /// Authenticates the client.
         /// </summary>
-        /// <param name="version">The version.</param>
-        /// <param name="localIPAddress">The local IP address to state.</param>
         /// <exception cref="InvalidOperationException">The client is not connected.</exception>
         /// <exception cref="ClientException">An error occurred.</exception>
         /// TODO: This method is not very flexible in terms of the order of messages ...
-        public void Authenticate(int version, byte[] localIPAddress)
+        public void Authenticate()
         {
             if (!this.IsConnected)
             {
@@ -116,10 +124,11 @@
             const int BufferSize = 1000;
             byte[] buffer = new byte[BufferSize];
 
-            this.SendCsAuthInfo(version, localIPAddress);
+            this.SendCsAuthInfo();
             var scPingMessage = this.ReceiveScPing(buffer);
             this.SendCsPing(scPingMessage.PingValue);
             var scAuthInfoMessage = this.ReceiveScAuthInfo(buffer);
+            this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
         }
 
         /// <summary>
@@ -159,13 +168,11 @@
         /// <summary>
         /// Sends a client-to-server authentication info message.
         /// </summary>
-        /// <param name="version">The version.</param>
-        /// <param name="localIPAddress">The local IP address.</param>
-        private void SendCsAuthInfo(int version, byte[] localIPAddress)
+        private void SendCsAuthInfo()
         {
             var csAuthInfomessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
                 SidMessageType.AuthInfo,
-                new object[] { ProductID.D2xp, version, localIPAddress });
+                new object[] { ProductID.D2xp, this.settings.Version, this.settings.LocalIPAddress });
             this.stream.Write(csAuthInfomessage.Bytes, 0, csAuthInfomessage.Bytes.Length);
         }
 
@@ -246,6 +253,33 @@
                         message.LogonType,
                         LogonType.BrokenSha1));
             }
+        }
+
+        /// <summary>
+        /// Sends a client-to-server authentication check message.
+        /// </summary>
+        /// <param name="mpqFileName">The MPQ file name received in the SID_AUTH_INFO message from
+        /// the server.</param>
+        /// <param name="valueString">The value string received in the SID_AUTH_INFO message from
+        /// the server.
+        /// </param>
+        /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
+        /// the server.</param>
+        private void SendCsAuthCheck(
+            string mpqFileName,
+            string valueString,
+            Int32 serverToken)
+        {
+            var csAuthCheckMessage = AuthCheckClientToServerSidMessage.CreateFromHighLevelData(
+                this.settings.FileTriple,
+                ProductID.D2xp,
+                this.settings.CDKey1,
+                this.settings.CDKey2,
+                this.settings.CDKeyOwner,
+                mpqFileName,
+                valueString,
+                serverToken);
+            this.stream.Write(csAuthCheckMessage.Bytes, 0, csAuthCheckMessage.Bytes.Length);
         }
     }
 }

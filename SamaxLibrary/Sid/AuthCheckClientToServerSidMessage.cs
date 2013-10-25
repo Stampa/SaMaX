@@ -148,7 +148,7 @@
         /// SID_AUTH_INFO message.</param>
         /// <returns>An instance of the <see cref="AuthCheckClientToServerSidMessage"/> class with
         /// the specified data.</returns>
-        public AuthCheckClientToServerSidMessage CreateFromHighLevelData(
+        public static AuthCheckClientToServerSidMessage CreateFromHighLevelData(
             FileTriple fileTriple,
             ProductID productID,
             string cdKey1,
@@ -170,7 +170,7 @@
             string exeInformation;
             Int32 exeVersion = CheckRevision.GetExeInfo(fileTriple.ExePath, out exeInformation);
             Int32 exeHash = CheckRevision.DoCheckRevision(valueString, fileTriple.GetStreams(), mpqNumber);
-            Int32 numberOfCDKeys = this.GetNumberOfKeysForProduct(productID);
+            Int32 numberOfCDKeys = GetNumberOfKeysForProduct(productID);
             Int32 spawn = 0; // TODO: Hardcoding to 0 is bad and it should be a type of its own (SID boolean)
 
             CdKey key1 = new CdKey(cdKey1);
@@ -183,10 +183,10 @@
             writer.AppendInt32(numberOfCDKeys);
             writer.AppendInt32(spawn);
 
-            this.AppendKeyToWriter(writer, key1, clientToken, serverToken);
+            AppendKeyToWriter(writer, key1, clientToken, serverToken);
             if (numberOfCDKeys == 2)
             {
-                this.AppendKeyToWriter(writer, key2, clientToken, serverToken);
+                AppendKeyToWriter(writer, key2, clientToken, serverToken);
             }
 
             writer.AppendAsciiString(exeInformation);
@@ -206,7 +206,7 @@
         /// <param name="clientToken">A client token to use.</param>
         /// <param name="serverToken">The server token received in the server-to-client
         /// SID_AUTH_INFO message.</param>
-        private void AppendKeyToWriter(SidByteWriter writer, CdKey key, int clientToken, int serverToken)
+        private static void AppendKeyToWriter(SidByteWriter writer, CdKey key, int clientToken, int serverToken)
         {
             writer.AppendInt32(key.Key.Length);
             writer.AppendInt32(key.Product);
@@ -221,7 +221,7 @@
         /// </summary>
         /// <param name="productID">The ID of the product.</param>
         /// <returns>The number of keys used for the specified product.</returns>
-        private int GetNumberOfKeysForProduct(ProductID productID)
+        private static int GetNumberOfKeysForProduct(ProductID productID)
         {
             switch (productID)
             {
