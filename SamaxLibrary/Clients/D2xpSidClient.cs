@@ -189,16 +189,7 @@
         {
             byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
-
-            if (message.MessageType != SidMessageType.Ping)
-            {
-                throw new ClientException(
-                    String.Format(
-                        "The message type ({0}) was not {1}.",
-                        message.MessageType,
-                        SidMessageType.Ping));
-            }
-
+            this.ValidateScPing(message);
             return (PingServerToClientSidMessage)message;
         }
 
@@ -225,36 +216,8 @@
         {
             byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
-            if (message.MessageType != SidMessageType.AuthInfo)
-            {
-                throw new ClientException(
-                    String.Format(
-                        "The message type ({0}) was not {1}.",
-                        message.MessageType,
-                        SidMessageType.AuthInfo));
-            }
-
-            var scAuthInfoMessage = (AuthInfoServerToClientSidMessage)message;
-            this.ValidateScAuthInfo(scAuthInfoMessage);
-            return scAuthInfoMessage;
-        }
-
-        /// <summary>
-        /// Validates a server-to-client authentication info message by throwing exceptions if it
-        /// contains unexpected data.
-        /// </summary>
-        /// <param name="message">The authentication info message to validate.</param>
-        /// <exception cref="ClientException">The logon type is not broken SHA-1.</exception>
-        private void ValidateScAuthInfo(AuthInfoServerToClientSidMessage message)
-        {
-            if (message.LogonType != LogonType.BrokenSha1)
-            {
-                throw new ClientException(
-                    String.Format(
-                        "Received logon type was {0}, not {1}.",
-                        message.LogonType,
-                        LogonType.BrokenSha1));
-            }
+            this.ValidateScAuthInfo(message);
+            return (AuthInfoServerToClientSidMessage)message;
         }
 
         /// <summary>
@@ -297,36 +260,8 @@
         {
             byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
-            if (message.MessageType != SidMessageType.AuthCheck)
-            {
-                throw new ClientException(
-                    String.Format(
-                        "The message type ({0}) was not {1}.",
-                        message.MessageType,
-                        SidMessageType.AuthInfo));
-            }
-
-            var scAuthCheckMessage = (AuthCheckServerToClientSidMessage)message;
-            this.ValidateScAuthCheck(scAuthCheckMessage);
-            return scAuthCheckMessage;
-        }
-
-        /// <summary>
-        /// Validates a server-to-client authentication check message by throwing exceptions if it
-        /// contains unexpected data.
-        /// </summary>
-        /// <param name="message">The authentication check message to validate.</param>
-        /// <exception cref="ClientException">The result is not 0.</exception>
-        private void ValidateScAuthCheck(AuthCheckServerToClientSidMessage message)
-        {
-            if (message.Result != 0)
-            {
-                throw new ClientException(
-                    String.Format(
-                        "The authentication was not successful. The result was {0}, not {1}.",
-                        message.Result,
-                        0));
-            }
+            this.ValidateScAuthCheck(message);
+            return (AuthCheckServerToClientSidMessage)message;
         }
 
         /// <summary>
@@ -344,6 +279,80 @@
                 this.settings.AccountName,
                 this.settings.Password);
             this.stream.Write(message.Bytes, 0, message.Bytes.Length);
+        }
+
+        /// <summary>
+        /// Validates a server-to-client ping message by throwing exceptions if it contains
+        /// unexpected data.
+        /// </summary>
+        /// <param name="message">The message to validate.</param>
+        /// <exception cref="ClientException">The message contains unexpected data.</exception>
+        private void ValidateScPing(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.Ping)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.Ping));
+            }
+        }
+
+        /// <summary>
+        /// Validates a server-to-client authentication info message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The authentication info message to validate.</param>
+        /// <exception cref="ClientException">The logon type is not broken SHA-1.</exception>
+        private void ValidateScAuthInfo(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.AuthInfo)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.AuthInfo));
+            }
+
+            var csAuthInfoMessage = (AuthInfoServerToClientSidMessage)message;
+            if (csAuthInfoMessage.LogonType != LogonType.BrokenSha1)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "Received logon type was {0}, not {1}.",
+                        csAuthInfoMessage.LogonType,
+                        LogonType.BrokenSha1));
+            }
+        }
+
+        /// <summary>
+        /// Validates a server-to-client authentication check message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The authentication check message to validate.</param>
+        /// <exception cref="ClientException">The result is not 0.</exception>
+        private void ValidateScAuthCheck(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.AuthCheck)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.AuthInfo));
+            }
+
+            var scAuthCheckMessage = (AuthCheckServerToClientSidMessage)message;
+            if (scAuthCheckMessage.Result != 0)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The authentication was not successful. The result was {0}, not {1}.",
+                        scAuthCheckMessage.Result,
+                        0));
+            }
         }
     }
 }
