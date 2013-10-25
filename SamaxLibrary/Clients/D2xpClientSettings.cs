@@ -56,6 +56,16 @@
         public string CDKeyOwner { get; private set; }
 
         /// <summary>
+        /// Gets the name of the Battle.Net account.
+        /// </summary>
+        public string AccountName { get; private set; }
+
+        /// <summary>
+        /// Gets the password of the Battle.Net account.
+        /// </summary>
+        public string Password { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="D2xpClientSettings"/> class.
         /// </summary>
         /// <param name="ipAddress">The IP address of the server.</param>
@@ -66,6 +76,8 @@
         /// <param name="cdKey1">The first CD key.</param>
         /// <param name="cdKey2">The second CD key.</param>
         /// <param name="cdKeyOwner">The name of the CD key owner.</param>
+        /// <param name="accountName">The account name.</param>
+        /// <param name="password">The password.</param>
         public D2xpClientSettings(
             IPAddress ipAddress,
             int port,
@@ -74,7 +86,9 @@
             D2xpFileTriple fileTriple,
             string cdKey1,
             string cdKey2,
-            string cdKeyOwner)
+            string cdKeyOwner,
+            string accountName,
+            string password)
         {
             this.IPAddress = ipAddress;
             this.Port = port;
@@ -84,6 +98,8 @@
             this.CDKey1 = cdKey1;
             this.CDKey2 = cdKey2;
             this.CDKeyOwner = cdKeyOwner;
+            this.AccountName = accountName;
+            this.Password = password;
         }
     }
 }

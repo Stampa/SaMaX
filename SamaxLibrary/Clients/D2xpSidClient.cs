@@ -128,7 +128,9 @@
             var scPingMessage = this.ReceiveScPing(buffer);
             this.SendCsPing(scPingMessage.PingValue);
             var scAuthInfoMessage = this.ReceiveScAuthInfo(buffer);
-            this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
+            var csAuthCheckMessage = this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
+            this.ReceiveScAuthCheck(buffer);
+            this.SendCsLogonResponse2(csAuthCheckMessage.ClientToken, scAuthInfoMessage.ServerToken);
         }
 
         /// <summary>
@@ -265,7 +267,8 @@
         /// </param>
         /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
         /// the server.</param>
-        private void SendCsAuthCheck(
+        /// <returns>The authentication check message that was sent.</returns>
+        private AuthCheckClientToServerSidMessage SendCsAuthCheck(
             string mpqFileName,
             string valueString,
             Int32 serverToken)
@@ -280,6 +283,7 @@
                 valueString,
                 serverToken);
             this.stream.Write(csAuthCheckMessage.Bytes, 0, csAuthCheckMessage.Bytes.Length);
+            return csAuthCheckMessage;
         }
 
         /// <summary>
@@ -323,6 +327,23 @@
                         message.Result,
                         0));
             }
+        }
+
+        /// <summary>
+        /// Sends a client-to-server logon response (2) message.
+        /// </summary>
+        /// <param name="clientToken">The client token generated for the SID_AUTH_CHECK message.
+        /// </param>
+        /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
+        /// the server.</param>
+        private void SendCsLogonResponse2(Int32 clientToken, Int32 serverToken)
+        {
+            var message = LogonResponse2ClientToServerSidMessage.CreateFromHighLevelData(
+                clientToken,
+                serverToken,
+                this.settings.AccountName,
+                this.settings.Password);
+            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
         }
     }
 }
