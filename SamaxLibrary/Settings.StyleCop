@@ -16,6 +16,7 @@
           <Value>cd</Value>
           <Value>cs</Value>
           <Value>d2</Value>
+          <Value>ip</Value>
           <Value>sc</Value>
         </CollectionProperty>
       </AnalyzerSettings>
