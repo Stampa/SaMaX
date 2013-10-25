@@ -137,7 +137,7 @@
         /// <param name="stream">The stream from which to read.</param>
         /// <param name="buffer">The buffer used to receive the bytes.</param>
         /// <returns>The bytes composing the next message in the stream.</returns>
-        private byte[] ReadMessageBytes(NetworkStream stream, byte[] buffer)
+        private byte[] GetMessageBytes(NetworkStream stream, byte[] buffer)
         {
             // Read header bytes first to determine how much more to read
             int amountOfBytesRead = stream.Read(buffer, 0, SidHeader.HeaderLength);
@@ -185,7 +185,7 @@
         /// <see cref="SidMessageType.Ping"/></exception>
         private PingServerToClientSidMessage ReceiveScPing(byte[] buffer)
         {
-            byte[] messageBytes = this.ReadMessageBytes(this.stream, buffer);
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
 
             if (message.MessageType != SidMessageType.Ping)
@@ -217,11 +217,11 @@
         /// </summary>
         /// <param name="buffer">The buffer used to receive the message bytes.</param>
         /// <returns>The received server-to-client authentication info message.</returns>
-        /// <exception cref="ClientException">The message received is not of type
-        /// <see cref="SidMessageType.AuthInfo"/></exception>
+        /// <exception cref="ClientException">The received message contains unexpected data.
+        /// </exception>
         private AuthInfoServerToClientSidMessage ReceiveScAuthInfo(byte[] buffer)
         {
-            byte[] messageBytes = this.ReadMessageBytes(this.stream, buffer);
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
             if (message.MessageType != SidMessageType.AuthInfo)
             {
@@ -239,7 +239,7 @@
 
         /// <summary>
         /// Validates a server-to-client authentication info message by throwing exceptions if it
-        /// is invalid.
+        /// contains unexpected data.
         /// </summary>
         /// <param name="message">The authentication info message to validate.</param>
         /// <exception cref="ClientException">The logon type is not broken SHA-1.</exception>
@@ -280,6 +280,49 @@
                 valueString,
                 serverToken);
             this.stream.Write(csAuthCheckMessage.Bytes, 0, csAuthCheckMessage.Bytes.Length);
+        }
+
+        /// <summary>
+        /// Receives a server-to-client authentication check message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client authentication info message.</returns>
+        /// <exception cref="ClientException">The received message contains unexpected data.
+        /// </exception>
+        private AuthCheckServerToClientSidMessage ReceiveScAuthCheck(byte[] buffer)
+        {
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            if (message.MessageType != SidMessageType.AuthCheck)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.AuthInfo));
+            }
+
+            var scAuthCheckMessage = (AuthCheckServerToClientSidMessage)message;
+            this.ValidateScAuthCheck(scAuthCheckMessage);
+            return scAuthCheckMessage;
+        }
+
+        /// <summary>
+        /// Validates a server-to-client authentication check message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The authentication check message to validate.</param>
+        /// <exception cref="ClientException">The result is not 0.</exception>
+        private void ValidateScAuthCheck(AuthCheckServerToClientSidMessage message)
+        {
+            if (message.Result != 0)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The authentication was not successful. The result was {0}, not {1}.",
+                        message.Result,
+                        0));
+            }
         }
     }
 }

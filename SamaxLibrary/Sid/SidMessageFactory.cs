@@ -113,6 +113,9 @@
                 case SidMessageType.AuthInfo:
                     message = new AuthInfoServerToClientSidMessage(messageBytes);
                     break;
+                case SidMessageType.AuthCheck:
+                    message = new AuthCheckClientToServerSidMessage(messageBytes);
+                    break;
                 default:
                     Debug.Fail(
                         String.Format(
