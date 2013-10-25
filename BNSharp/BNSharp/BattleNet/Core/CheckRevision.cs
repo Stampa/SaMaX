@@ -341,13 +341,18 @@ namespace BNSharp.BattleNet.Core
 				((fvi.FileMinorPart & 0x00ff0000) >> 8) |
 				(fvi.FileMinorPart & 0x000000ff);
             */
+
+            //int version = ((fvi.FileMajorPart << 24) |
+            //    (fvi.FileMinorPart << 16) |
+            //    (fvi.FileBuildPart << 8) | fvi.FilePrivatePart);
+
             int version = ((fvi.FileMajorPart << 24) |
                 (fvi.FileMinorPart << 16) |
-                (fvi.FileBuildPart << 8) | fvi.FilePrivatePart);
+                (fvi.FileBuildPart << 8));
 
             exeInfoString = String.Format(CultureInfo.InvariantCulture,
-                "{0} {1:MM/dd/yy hh:mm:ss} {2}",
-                file, ft.Month, ft.Day, ft.Year % 100, ft.Hour, ft.Minute, ft.Second, fileSize
+                "{0} {1:MM/dd/yy HH:mm:ss} {2}",
+                file, ft, fileSize
                 );
 
             return version;

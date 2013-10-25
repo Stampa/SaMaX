@@ -172,7 +172,7 @@
         {
             var csAuthInfomessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
                 SidMessageType.AuthInfo,
-                new object[] { ProductID.D2xp, this.settings.Version, this.settings.LocalIPAddress });
+                new object[] { ProductID.D2xp, this.settings.Version, this.settings.LocalIPAddress.GetAddressBytes() });
             this.stream.Write(csAuthInfomessage.Bytes, 0, csAuthInfomessage.Bytes.Length);
         }
 

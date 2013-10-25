@@ -114,6 +114,9 @@
                     SidAuthCheckKeyData keyData = new SidAuthCheckKeyData(keyDataBytes);
                     keyDataBuilder.Add(keyData);
                 }
+
+                this.ExecutableInformation = parser.ReadAsciiString();
+                this.CDKeyOwner = parser.ReadAsciiString();
             }
             catch (SidByteParserException ex)
             {
