@@ -93,6 +93,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MessageDirection.cs" />
     <Compile Include="Sid\AuthCheckClientToServerSidMessage.cs" />
+    <Compile Include="Sid\AuthCheckServerToClientSidMessage.cs" />
     <Compile Include="Sid\AuthInfoClientToServerSidMessage.cs" />
     <Compile Include="Sid\AuthInfoServerToClientSidMessage.cs" />
     <Compile Include="Sid\BrokenSha1.cs" />
