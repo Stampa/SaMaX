@@ -7,40 +7,37 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// This class represents a SID_AUTH_CHECK message sent from the server to the client.
+    /// This class represents a SID_LOGONRESPONSE2 message sent from the server to the client.
     /// </summary>
-    public class AuthCheckServerToClientSidMessage : SidMessage
+    public class LogonResponse2ServerToClientSidMessage : SidMessage
     {
         /// <summary>
         /// The SID message type of the SID message that the
-        /// <see cref="AuthCheckServerToClientSidMessage"/> class represents.
+        /// <see cref="LogonResponse2ServerToClientSidMessage"/> class represents.
         /// </summary>
-        public new const SidMessageType MessageType = SidMessageType.AuthCheck;
+        public new const SidMessageType MessageType = SidMessageType.LogonResponse2;
 
         /// <summary>
-        /// Gets the result of the authentication check.
+        /// Gets the logon response.
         /// </summary>
-        /// <remarks>
-        /// 0x000 indicates success.
-        /// </remarks>
-        /// TODO: There's a lot of possible return values to document.
-        /// Make an enum for them of course!
-        public Int32 Result { get; private set; }
+        public LogonResponse Status { get; private set; }
 
         /// <summary>
         /// Gets a string with additional information for the result.
         /// </summary>
+        /// <remarks>This value is <see langword="null"/> rather than an empty string whenever
+        /// <see cref="Status"/> is not <see cref="LogonResponse.AccountClosed"/>.</remarks>
         public string AdditionalInformation { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthCheckServerToClientSidMessage"/> class.
+        /// Initializes a new instance of the <see cref="LogonResponse2ServerToClientSidMessage"/> class.
         /// </summary>
         /// <param name="messageBytes">An array of bytes that composes the message.</param>
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
         /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not represent
-        /// a valid server-to-client SID_AUTH_CHECK message.</exception>
-        public AuthCheckServerToClientSidMessage(byte[] messageBytes)
+        /// a valid server-to-client SID_LOGONRESPONSE2 message.</exception>
+        public LogonResponse2ServerToClientSidMessage(byte[] messageBytes)
             : base(messageBytes, MessageType)
         {
             if (messageBytes == null)
@@ -52,8 +49,11 @@
 
             try
             {
-                this.Result = parser.ReadInt32();
-                this.AdditionalInformation = parser.ReadAsciiString();
+                this.Status = parser.ReadInt32AsEnum<LogonResponse>();
+                if (this.Status == LogonResponse.AccountClosed)
+                {
+                    this.AdditionalInformation = parser.ReadAsciiString();
+                }
             }
             catch (SidByteParserException ex)
             {

@@ -116,6 +116,9 @@
                 case SidMessageType.AuthCheck:
                     message = new AuthCheckServerToClientSidMessage(messageBytes);
                     break;
+                case SidMessageType.LogonResponse2:
+                    message = new LogonResponse2ServerToClientSidMessage(messageBytes);
+                    break;
                 default:
                     Debug.Fail(
                         String.Format(

@@ -99,6 +99,8 @@
     <Compile Include="Sid\BrokenSha1.cs" />
     <Compile Include="Sid\BrokenSha1Hash.cs" />
     <Compile Include="Sid\FileTriple.cs" />
+    <Compile Include="Sid\LogonResponse.cs" />
+    <Compile Include="Sid\LogonResponse2ServerToClientSidMessage.cs" />
     <Compile Include="Sid\SidAuthCheckKeyData.cs" />
     <Compile Include="Sid\LogonResponse2ClientToServerSidMessage.cs" />
     <Compile Include="Sid\LogonType.cs" />

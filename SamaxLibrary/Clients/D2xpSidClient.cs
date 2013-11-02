@@ -131,6 +131,7 @@
             var csAuthCheckMessage = this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
             this.ReceiveScAuthCheck(buffer);
             this.SendCsLogonResponse2(csAuthCheckMessage.ClientToken, scAuthInfoMessage.ServerToken);
+            var scLogonResponse2Message = this.ReceiveScLogonResponse2(buffer);
         }
 
         /// <summary>
@@ -282,6 +283,21 @@
         }
 
         /// <summary>
+        /// Receives a server-to-client logon response 2 message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client logon response 2 message.</returns>
+        /// <exception cref="ClientException">The received message contains unexpected data.
+        /// </exception>
+        private LogonResponse2ServerToClientSidMessage ReceiveScLogonResponse2(byte[] buffer)
+        {
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            this.ValidateScLogonResponse2(message);
+            return (LogonResponse2ServerToClientSidMessage)message;
+        }
+
+        /// <summary>
         /// Validates a server-to-client ping message by throwing exceptions if it contains
         /// unexpected data.
         /// </summary>
@@ -352,6 +368,34 @@
                         "The authentication was not successful. The result was {0}, not {1}.",
                         scAuthCheckMessage.Result,
                         0));
+            }
+        }
+
+        /// <summary>
+        /// Validates a server-to-client logon response 2 message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The logon response 2 message to validate.</param>
+        /// <exception cref="ClientException">The status is not "success".</exception>
+        private void ValidateScLogonResponse2(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.LogonResponse2)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.AuthInfo));
+            }
+
+            var scAuthCheckMessage = (LogonResponse2ServerToClientSidMessage)message;
+            if (scAuthCheckMessage.Status != LogonResponse.Success)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "Could not log onto the account. The response was {0}, not {1}.",
+                        scAuthCheckMessage.Status,
+                        LogonResponse.Success));
             }
         }
     }
