@@ -31,7 +31,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="messageBytes"/> is <c>null</c>.
         /// </exception>
         /// <exception cref="ArgumentException"><paramref name="messageBytes"/> does not represent
-        /// a valid server-to-client SID_PING message.</exception>
+        /// a valid client-to-server SID_PING message.</exception>
         public PingClientToServerSidMessage(byte[] messageBytes)
             : base(messageBytes, MessageType)
         {

@@ -110,6 +110,7 @@
         /// <exception cref="InvalidOperationException">The client is not connected.</exception>
         /// <exception cref="ClientException">An error occurred.</exception>
         /// TODO: This method is not very flexible in terms of the order of messages ...
+        /// The part after the authentication check messages should probably be placed elsewhere
         public void Authenticate()
         {
             if (!this.IsConnected)
@@ -131,7 +132,8 @@
             var csAuthCheckMessage = this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
             this.ReceiveScAuthCheck(buffer);
             this.SendCsLogonResponse2(csAuthCheckMessage.ClientToken, scAuthInfoMessage.ServerToken);
-            var scLogonResponse2Message = this.ReceiveScLogonResponse2(buffer);
+            this.ReceiveScLogonResponse2(buffer);
+            this.SendCsQueryRealms2();
         }
 
         /// <summary>
@@ -283,10 +285,10 @@
         }
 
         /// <summary>
-        /// Receives a server-to-client logon response 2 message.
+        /// Receives a server-to-client logon response (2) message.
         /// </summary>
         /// <param name="buffer">The buffer used to receive the message bytes.</param>
-        /// <returns>The received server-to-client logon response 2 message.</returns>
+        /// <returns>The received server-to-client logon response (2) message.</returns>
         /// <exception cref="ClientException">The received message contains unexpected data.
         /// </exception>
         private LogonResponse2ServerToClientSidMessage ReceiveScLogonResponse2(byte[] buffer)
@@ -295,6 +297,15 @@
             SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
             this.ValidateScLogonResponse2(message);
             return (LogonResponse2ServerToClientSidMessage)message;
+        }
+
+        /// <summary>
+        /// Sends a client-to-server query realms (2) message.
+        /// </summary>
+        private void SendCsQueryRealms2()
+        {
+            var message = QueryRealms2ClientToServerSidMessage.CreateFromHighLevelData();
+            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
         }
 
         /// <summary>
@@ -372,10 +383,10 @@
         }
 
         /// <summary>
-        /// Validates a server-to-client logon response 2 message by throwing exceptions if it
+        /// Validates a server-to-client logon response (2) message by throwing exceptions if it
         /// contains unexpected data.
         /// </summary>
-        /// <param name="message">The logon response 2 message to validate.</param>
+        /// <param name="message">The logon response (2) message to validate.</param>
         /// <exception cref="ClientException">The status is not "success".</exception>
         private void ValidateScLogonResponse2(SidMessage message)
         {
