@@ -128,6 +128,36 @@
         }
 
         /// <summary>
+        /// Computes a "tokenized" hash of a password.
+        /// </summary>
+        /// <param name="clientToken">The client token.</param>
+        /// <param name="serverToken">The server token.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>The "tokenized" password hash for the specified client token, server token,
+        /// and password.</returns>
+        /// <remarks>Informally, the password hash is computed as follows:
+        /// <code>
+        ///     hash = Bsha(<paramref name="clientToken"/>, <paramref name="serverToken"/>,
+        ///     Bsha(<paramref name="password"/>))
+        /// </code>
+        /// </remarks>
+        public static BrokenSha1Hash ComputeTokenizedHash(
+            Int32 clientToken,
+            Int32 serverToken,
+            string password)
+        {
+            byte[] firstPassBytes = BrokenSha1.ComputeHashOfAsciiString(password);
+
+            ByteWriter writer = new ByteWriter(true);
+            writer.AppendInt32(clientToken);
+            writer.AppendInt32(serverToken);
+            writer.AppendByteArray(firstPassBytes);
+            byte[] secondPassBytes = BrokenSha1.ComputeHash(writer.Bytes);
+
+            return new BrokenSha1Hash(secondPassBytes);
+        }
+
+        /// <summary>
         /// Computes the hash value for an ASCII string.
         /// </summary>
         /// <param name="asciiString">The ASCII string for which to compute the hash code.</param>

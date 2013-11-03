@@ -1,0 +1,3 @@
+## Robustness ##
+Validate the strings for the SID protocol
+	They are supposed to be ASCII strings and probably have more restrictions than that

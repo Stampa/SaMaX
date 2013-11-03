@@ -71,7 +71,7 @@
             Assert.That(message.ClientToken, Is.EqualTo(ValidMessageBytesClientToken));
             Assert.That(message.ServerToken, Is.EqualTo(ValidMessageBytesServerToken));
             Assert.That(message.AccountName, Is.EqualTo(ValidMessageBytesAccountName));
-            Assert.That(message.PasswordHash, Is.EqualTo(validMessageBytesPasswordHash));
+            Assert.That(message.TokenizedPasswordHash, Is.EqualTo(validMessageBytesPasswordHash));
         }
 
         [Test]
@@ -113,7 +113,7 @@
                 AccountName,
                 password);
 
-            return message.PasswordHash;
+            return message.TokenizedPasswordHash;
         }
 
         //// TODO: More CreateFromHighLevelData tests!

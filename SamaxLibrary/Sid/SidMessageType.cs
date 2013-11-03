@@ -18,7 +18,12 @@
         /// <summary>
         /// The type corresponding to SID_LOGONRESPONSE2 messages.
         /// </summary>
-        LogonResponse2 = 0x3A,
+        LogonResponse2 = 0x3a,
+
+        /// <summary>
+        /// The type corresponding to SID_LOGONREALMEX messages.
+        /// </summary>
+        LogonRealmEx = 0x3e,
 
         /// <summary>
         /// The type corresponding to SID_QUERYREALMS2 messages.

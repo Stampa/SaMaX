@@ -11,6 +11,7 @@
     /// <summary>
     /// This immutable class represents a hash obtained using Blizzard's broken SHA-1 algorithm.
     /// </summary>
+    /// <seealso cref="BrokenSha1"/>
     public class BrokenSha1Hash
     {
         /// <summary>

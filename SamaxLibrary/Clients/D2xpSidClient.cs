@@ -129,12 +129,15 @@
             var scPingMessage = this.ReceiveScPing(buffer);
             this.SendCsPing(scPingMessage.PingValue);
             var scAuthInfoMessage = this.ReceiveScAuthInfo(buffer);
+            Int32 serverToken = scAuthInfoMessage.ServerToken;
             var csAuthCheckMessage = this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
+            Int32 clientToken = csAuthCheckMessage.ClientToken;
             this.ReceiveScAuthCheck(buffer);
-            this.SendCsLogonResponse2(csAuthCheckMessage.ClientToken, scAuthInfoMessage.ServerToken);
+            this.SendCsLogonResponse2(clientToken, serverToken);
             this.ReceiveScLogonResponse2(buffer);
             this.SendCsQueryRealms2();
             var scQueryRealms2Message = this.ReceiveScQueryRealms2(buffer);
+            this.SendCsLogonRealmEx(clientToken, serverToken, scQueryRealms2Message.Realms[0].Title);
         }
 
         /// <summary>
@@ -325,6 +328,24 @@
         }
 
         /// <summary>
+        /// Sends a client-to-server logon realm ex message.
+        /// </summary>
+        /// <param name="clientToken">The client token generated for the SID_AUTH_CHECK message.
+        /// </param>
+        /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
+        /// the server.</param>
+        /// <param name="realmTitle">The realm title as received in the SID_QUERYREALMS2 message
+        /// from the server.</param>
+        private void SendCsLogonRealmEx(Int32 clientToken, Int32 serverToken, string realmTitle)
+        {
+            var message = LogonRealmExClientToServerSidMessage.CreateFromHighLevelData(
+                clientToken,
+                serverToken,
+                realmTitle);
+            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
+        }
+
+        /// <summary>
         /// Validates a server-to-client ping message by throwing exceptions if it contains
         /// unexpected data.
         /// </summary>
@@ -431,7 +452,7 @@
         /// contains unexpected data.
         /// </summary>
         /// <param name="message">The query realms (2) message to validate.</param>
-        /// <exception cref="ClientException">The realm count is non-positive.</exception>
+        /// <exception cref="ClientException">There is not exactly one realm.</exception>
         private void ValidateScQueryRealms2(SidMessage message)
         {
             if (message.MessageType != SidMessageType.QueryRealms2)
@@ -444,9 +465,13 @@
             }
 
             var scQueryRealms2Message = (QueryRealms2ServerToClientSidMessage)message;
-            if (scQueryRealms2Message.RealmCount == 0)
+            if (scQueryRealms2Message.RealmCount != 1)
             {
-                throw new ClientException("There were no realms to which to connect.");
+                throw new ClientException(
+                    String.Format(
+                        "There were {0} realm(s) to which to connect, not {1}.",
+                        scQueryRealms2Message.RealmCount,
+                        1));
             }
         }
     }

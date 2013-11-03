@@ -32,16 +32,17 @@
         public Int32 ServerToken { get; private set; }
 
         /// <summary>
-        /// Gets a hash of the password.
+        /// Gets a "tokenized" hash of the password.
         /// </summary>
         /// <remarks>
         /// <para>This value is the result of the broken SHA-1 algorithm applied twice in a way
         /// that involves the client token and the server token as well as the password itself.
         /// </para>
+        /// <para>
+        /// See <see cref="BrokenSha1.ComputeTokenizedHash"/> for more information.
+        /// </para>
         /// </remarks>
-        /// TODO: Perhaps it's inappropriate to call it a _password_ hash when the tokens are
-        /// involved as well.
-        public BrokenSha1Hash PasswordHash { get; private set; }
+        public BrokenSha1Hash TokenizedPasswordHash { get; private set; }
 
         /// <summary>
         /// Gets the account name.
@@ -72,7 +73,7 @@
             {
                 this.ClientToken = parser.ReadInt32();
                 this.ServerToken = parser.ReadInt32();
-                this.PasswordHash = parser.ReadBrokenSha1Hash();
+                this.TokenizedPasswordHash = parser.ReadBrokenSha1Hash();
                 this.AccountName = parser.ReadAsciiString();
                 //// TODO: Validate the account name
             }
@@ -121,7 +122,7 @@
             //// Make sure that the account name is not too long for SidMessage.GetMessageBytes to fail.
 
             // Note that the bytes do not include any null terminator. (What's with this comment?)
-            BrokenSha1Hash passwordHash = ComputePasswordHash(clientToken, serverToken, password);
+            BrokenSha1Hash passwordHash = BrokenSha1.ComputeTokenizedHash(clientToken, serverToken, password);
 
             SidByteWriter writer = new SidByteWriter();
             writer.AppendInt32(clientToken);
@@ -133,36 +134,6 @@
             byte[] messageBytes = SidMessage.GetMessageBytes(dataBytes, MessageType);
 
             return new LogonResponse2ClientToServerSidMessage(messageBytes);
-        }
-
-        /// <summary>
-        /// Computes the password hash.
-        /// </summary>
-        /// <param name="clientToken">The client token.</param>
-        /// <param name="serverToken">The server token.</param>
-        /// <param name="password">The password.</param>
-        /// <returns>The password hash for the specified client token, server token, and password.
-        /// </returns>
-        /// <remarks>Informally, the password hash is computed as follows:
-        /// <code>
-        ///     hash = Bsha(<paramref name="clientToken"/>, <paramref name="serverToken"/>,
-        ///     Bsha(<paramref name="password"/>))
-        /// </code></remarks>
-        /// TODO: Make sure that this code is not repeated elsewhere.
-        private static BrokenSha1Hash ComputePasswordHash(
-            Int32 clientToken,
-            Int32 serverToken,
-            string password)
-        {
-            byte[] firstPassBytes = BrokenSha1.ComputeHashOfAsciiString(password);
-
-            ByteWriter writer = new ByteWriter(true);
-            writer.AppendInt32(clientToken);
-            writer.AppendInt32(serverToken);
-            writer.AppendByteArray(firstPassBytes);
-            byte[] secondPassBytes = BrokenSha1.ComputeHash(writer.Bytes);
-
-            return new BrokenSha1Hash(secondPassBytes);
         }
     }
 }
