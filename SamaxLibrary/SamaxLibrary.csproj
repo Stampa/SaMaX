@@ -100,6 +100,7 @@
     <Compile Include="Sid\BrokenSha1Hash.cs" />
     <Compile Include="Sid\FileTriple.cs" />
     <Compile Include="Sid\LogonRealmExClientToServerSidMessage.cs" />
+    <Compile Include="Sid\LogonRealmExServerToClientSidMessage.cs" />
     <Compile Include="Sid\LogonResponse.cs" />
     <Compile Include="Sid\LogonResponse2ServerToClientSidMessage.cs" />
     <Compile Include="Sid\QueryRealms2ClientToServerSidMessage.cs" />

@@ -18,8 +18,8 @@
         public new const SidMessageType MessageType = SidMessageType.LogonRealmEx;
 
         /// <summary>
-        /// Gets the client token that was generated for the client-to-server SID_AUTH_CHECK
-        /// message.
+        /// Gets the client token. This value is not to be confused with the client token of the
+        /// client-to-server SID_AUTH_CHECK message.
         /// </summary>
         /// <seealso cref="AuthCheckClientToServerSidMessage"/>
         public Int32 ClientToken { get; private set; }
@@ -33,12 +33,6 @@
         /// Gets the title of the realm to which to log on.
         /// </summary>
         public string RealmTitle { get; private set; }
-
-        /// <summary>
-        /// Gets the ping value, which is obtained from the server-to-client ping message.
-        /// </summary>
-        /// <seealso cref="PingServerToClientSidMessage.PingValue"/>
-        public Int32 PingValue { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogonRealmExClientToServerSidMessage"/> class.

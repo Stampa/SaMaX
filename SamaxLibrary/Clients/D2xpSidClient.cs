@@ -138,6 +138,7 @@
             this.SendCsQueryRealms2();
             var scQueryRealms2Message = this.ReceiveScQueryRealms2(buffer);
             this.SendCsLogonRealmEx(clientToken, serverToken, scQueryRealms2Message.Realms[0].Title);
+            var scLogonRealmExMessage = this.ReceiveScLogonRealmEx(buffer);
         }
 
         /// <summary>
@@ -346,6 +347,21 @@
         }
 
         /// <summary>
+        /// Receives a server-to-client logon realm ex message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client logon realm ex message.</returns>
+        /// <exception cref="ClientException">The received message contains unexpected data.
+        /// </exception>
+        private LogonRealmExServerToClientSidMessage ReceiveScLogonRealmEx(byte[] buffer)
+        {
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            this.ValidateScLogonRealmEx(message);
+            return (LogonRealmExServerToClientSidMessage)message;
+        }
+
+        /// <summary>
         /// Validates a server-to-client ping message by throwing exceptions if it contains
         /// unexpected data.
         /// </summary>
@@ -472,6 +488,32 @@
                         "There were {0} realm(s) to which to connect, not {1}.",
                         scQueryRealms2Message.RealmCount,
                         1));
+            }
+        }
+
+        /// <summary>
+        /// Validates a server-to-client logon realm ex message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The logon realm ex message to validate.</param>
+        private void ValidateScLogonRealmEx(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.LogonRealmEx)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.LogonRealmEx));
+            }
+
+            var scLogonRealmExMessage = (LogonRealmExServerToClientSidMessage)message;
+            if (!scLogonRealmExMessage.LogonWasSuccessful)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The logon was unsuccessful. The status code is {0}.",
+                        scLogonRealmExMessage.McpStatus));
             }
         }
     }

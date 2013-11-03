@@ -122,6 +122,9 @@
                 case SidMessageType.QueryRealms2:
                     message = new QueryRealms2ServerToClientSidMessage(messageBytes);
                     break;
+                case SidMessageType.LogonRealmEx:
+                    message = new LogonRealmExServerToClientSidMessage(messageBytes);
+                    break;
                 default:
                     Debug.Fail(
                         String.Format(

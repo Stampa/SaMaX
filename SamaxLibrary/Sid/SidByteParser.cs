@@ -227,6 +227,46 @@
         }
 
         /// <summary>
+        /// Reads an array of the specified amount of signed 32-bit integers.
+        /// </summary>
+        /// <param name="count">The amount of signed 32-bit integers to read.</param>
+        /// <returns>The array of signed 32-bit integers that was read.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than
+        /// zero.</exception>
+        /// <exception cref="SidByteParserException">There are fewer than
+        /// <c><paramref name="count"/> * 4</c> bytes left in the array of bytes to parse.
+        /// </exception>
+        public Int32[] ReadInt32Array(int count)
+        {
+            this.EnsuresSpecifiedAmountOfBytesAreRead(count * 4);
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            int byteCount = 4 * count;
+            if (byteCount > this.AmountOfBytesLeft)
+            {
+                throw new SidByteParserException(
+                    String.Format(
+                        "There are too few bytes left ({0}) to read {1} bytes ({2} 32-bit integers).",
+                        this.AmountOfBytesLeft,
+                        byteCount,
+                        count));
+            }
+
+            Int32[] returnValue = new Int32[count];
+            for (int i = 0; i < count; ++i)
+            {
+                returnValue[i] = this.converter.ToInt32(this.bytes, this.index);
+                this.index += 4;
+            }
+
+            return returnValue;
+        }
+
+        /// <summary>
         /// Reads a null-terminated ASCII string.
         /// </summary>
         /// <returns>The string that was read.</returns>
