@@ -100,6 +100,55 @@
         }
 
         /// <summary>
+        /// Reads a signed 16-bit integer.
+        /// </summary>
+        /// <returns>The signed 16-bit integer that was read.</returns>
+        /// <exception cref="SidByteParserException">There are fewer than 2 bytes left in the
+        /// array of bytes to parse.</exception>
+        public Int16 ReadInt16()
+        {
+            const int AmountOfBytesToRead = 2;
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
+
+            if (this.AmountOfBytesLeft < AmountOfBytesToRead)
+            {
+                throw new SidByteParserException(
+                    String.Format(
+                        "There are too few bytes left ({0}) to read a 16-bit integer.",
+                        this.AmountOfBytesLeft));
+            }
+
+            Int16 returnValue = this.converter.ToInt16(this.bytes, this.index);
+            this.index += AmountOfBytesToRead;
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Reads a signed 16-bit integer in network order (i.e., big endian).
+        /// </summary>
+        /// <returns>The signed 16-bit integer that was read in network order.</returns>
+        /// <exception cref="SidByteParserException">There are fewer than 2 bytes left in the
+        /// array of bytes to parse.</exception>
+        public Int16 ReadInt16InNetworkOrder()
+        {
+            const int AmountOfBytesToRead = 2;
+            this.EnsuresSpecifiedAmountOfBytesAreRead(AmountOfBytesToRead);
+
+            if (this.AmountOfBytesLeft < AmountOfBytesToRead)
+            {
+                throw new SidByteParserException(
+                    String.Format(
+                        "There are too few bytes left ({0}) to read a 16-bit integer.",
+                        this.AmountOfBytesLeft));
+            }
+
+            var converter = new BigEndianBitConverter();
+            Int16 returnValue = converter.ToInt16(this.bytes, this.index);
+            this.index += AmountOfBytesToRead;
+            return returnValue;
+        }
+
+        /// <summary>
         /// Reads a signed 32-bit integer.
         /// </summary>
         /// <returns>The signed 32-bit integer that was read.</returns>

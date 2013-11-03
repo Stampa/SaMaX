@@ -72,7 +72,12 @@
         /// Gets the port of the MCP server to which to connect.
         /// </summary>
         /// <remarks>If the logon was unsuccessful, this value is <see langword="null"/>.</remarks>
-        public Int32? Port { get; private set; }
+        public Int16? Port { get; private set; }
+
+        /// <summary>
+        /// Gets a value whose purpose is unknown.
+        /// </summary>
+        public Int16? Unknown { get; private set; }
 
         /// <summary>
         /// Gets the second MCP chunk, which contains 12 dwords.
@@ -115,7 +120,8 @@
                 {
                     this.McpChunk1 = parser.ReadInt32Array(2);
                     this.IPAddress = parser.ReadByteArray(4);
-                    this.Port = parser.ReadInt32();
+                    this.Port = parser.ReadInt16InNetworkOrder();
+                    this.Unknown = parser.ReadInt16();
                     this.McpChunk2 = parser.ReadInt32Array(12);
                     this.UniqueName = parser.ReadAsciiString();
                 }
