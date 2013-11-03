@@ -21,6 +21,11 @@
         LogonResponse2 = 0x3A,
 
         /// <summary>
+        /// The type corresponding to SID_QUERYREALMS2 messages.
+        /// </summary>
+        QueryRealms2 = 0x40,
+
+        /// <summary>
         /// The type corresponding to SID_AUTH_INFO messages.
         /// </summary>
         AuthInfo = 0x50,

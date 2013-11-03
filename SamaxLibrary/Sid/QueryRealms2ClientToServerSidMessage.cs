@@ -15,7 +15,7 @@
         /// The SID message type of the SID message that the
         /// <see cref="QueryRealms2ClientToServerSidMessage"/> class represents.
         /// </summary>
-        public new const SidMessageType MessageType = SidMessageType.Ping;
+        public new const SidMessageType MessageType = SidMessageType.QueryRealms2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryRealms2ClientToServerSidMessage"/> class.

@@ -134,6 +134,7 @@
             this.SendCsLogonResponse2(csAuthCheckMessage.ClientToken, scAuthInfoMessage.ServerToken);
             this.ReceiveScLogonResponse2(buffer);
             this.SendCsQueryRealms2();
+            var scQueryRealms2Message = this.ReceiveScQueryRealms2(buffer);
         }
 
         /// <summary>
@@ -309,6 +310,21 @@
         }
 
         /// <summary>
+        /// Receives a server-to-client query realms (2) message.
+        /// </summary>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The received server-to-client query realms (2) message.</returns>
+        /// <exception cref="ClientException">The received message contains unexpected data.
+        /// </exception>
+        private QueryRealms2ServerToClientSidMessage ReceiveScQueryRealms2(byte[] buffer)
+        {
+            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            this.ValidateScQueryRealms2(message);
+            return (QueryRealms2ServerToClientSidMessage)message;
+        }
+
+        /// <summary>
         /// Validates a server-to-client ping message by throwing exceptions if it contains
         /// unexpected data.
         /// </summary>
@@ -396,7 +412,7 @@
                     String.Format(
                         "The message type ({0}) was not {1}.",
                         message.MessageType,
-                        SidMessageType.AuthInfo));
+                        SidMessageType.LogonResponse2));
             }
 
             var scAuthCheckMessage = (LogonResponse2ServerToClientSidMessage)message;
@@ -407,6 +423,30 @@
                         "Could not log onto the account. The response was {0}, not {1}.",
                         scAuthCheckMessage.Status,
                         LogonResponse.Success));
+            }
+        }
+
+        /// <summary>
+        /// Validates a server-to-client query realms (2) message by throwing exceptions if it
+        /// contains unexpected data.
+        /// </summary>
+        /// <param name="message">The query realms (2) message to validate.</param>
+        /// <exception cref="ClientException">The realm count is non-positive.</exception>
+        private void ValidateScQueryRealms2(SidMessage message)
+        {
+            if (message.MessageType != SidMessageType.QueryRealms2)
+            {
+                throw new ClientException(
+                    String.Format(
+                        "The message type ({0}) was not {1}.",
+                        message.MessageType,
+                        SidMessageType.QueryRealms2));
+            }
+
+            var scQueryRealms2Message = (QueryRealms2ServerToClientSidMessage)message;
+            if (scQueryRealms2Message.RealmCount == 0)
+            {
+                throw new ClientException("There were no realms to which to connect.");
             }
         }
     }

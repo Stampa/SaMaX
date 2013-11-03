@@ -115,6 +115,8 @@
                     keyDataBuilder.Add(keyData);
                 }
 
+                this.KeyData = keyDataBuilder.ToReadOnlyCollection();
+
                 this.ExecutableInformation = parser.ReadAsciiString();
                 this.CDKeyOwner = parser.ReadAsciiString();
             }
