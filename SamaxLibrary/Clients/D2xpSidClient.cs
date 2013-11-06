@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -26,6 +27,11 @@
     /// <seealso cref="SamaxLibrary.Sid"/>
     public class D2xpSidClient
     {
+        /// <summary>
+        /// A trace source for writing sent and received packets to a log file.
+        /// </summary>
+        private static TraceSource traceSource;
+
         /// <summary>
         /// The settings for the client.
         /// </summary>
@@ -55,7 +61,7 @@
             }
 
             this.settings = settings;
-
+            
             this.IsConnected = false;
         }
 
@@ -172,7 +178,9 @@
                         header.MessageLength));
             }
 
-            return buffer.Take(amountOfBytesRead).ToArray();
+            byte[] messageBytes = buffer.Take(amountOfBytesRead).ToArray();
+            traceSource.TraceData(TraceEventType.Verbose, 0, messageBytes);
+            return messageBytes;
         }
 
         /// <summary>
