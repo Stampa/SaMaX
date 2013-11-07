@@ -88,6 +88,7 @@
     <Compile Include="Clients\D2xpFileTriple.cs" />
     <Compile Include="Clients\NamespaceDoc.cs" />
     <Compile Include="Clients\D2xpSidClient.cs" />
+    <Compile Include="Clients\TraceEventID.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

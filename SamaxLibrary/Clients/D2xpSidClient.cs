@@ -100,6 +100,7 @@
             {
                 // TODO: Is it really called a "protocol bit"?
                 byte[] protocolBitBuffer = { 1 };
+                traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, String.Join(", ", protocolBitBuffer));
                 this.stream.Write(protocolBitBuffer, 0, protocolBitBuffer.Length);
             }
             catch (IOException ex)
@@ -148,6 +149,18 @@
         }
 
         /// <summary>
+        /// Writes the bytes of a specified message to the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream to which to write.</param>
+        /// <param name="message">The message whose bytes to write.</param>
+        private void WriteMessage(NetworkStream stream, SidMessage message)
+        {
+            byte[] messageBytes = message.Bytes;
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, String.Join(", ", messageBytes));
+            stream.Write(messageBytes, 0, messageBytes.Length);
+        }
+
+        /// <summary>
         /// Reads the bytes of the next message from the specified stream.
         /// </summary>
         /// <param name="stream">The stream from which to read.</param>
@@ -179,7 +192,7 @@
             }
 
             byte[] messageBytes = buffer.Take(amountOfBytesRead).ToArray();
-            traceSource.TraceData(TraceEventType.Verbose, 0, messageBytes);
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.PacketReceived, String.Join(", ", messageBytes));
             return messageBytes;
         }
 
@@ -191,7 +204,7 @@
             var csAuthInfomessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
                 SidMessageType.AuthInfo,
                 new object[] { ProductID.D2xp, this.settings.Version, this.settings.LocalIPAddress.GetAddressBytes() });
-            this.stream.Write(csAuthInfomessage.Bytes, 0, csAuthInfomessage.Bytes.Length);
+            this.WriteMessage(this.stream, csAuthInfomessage);
         }
 
         /// <summary>
@@ -218,7 +231,7 @@
             var csPingMessage = SidMessageFactory.CreateClientToServerMessageFromHighLevelData(
                 SidMessageType.Ping,
                 new object[] { pingValue });
-            this.stream.Write(csPingMessage.Bytes, 0, csPingMessage.Bytes.Length);
+            this.WriteMessage(this.stream, csPingMessage);
         }
 
         /// <summary>
@@ -261,7 +274,7 @@
                 mpqFileName,
                 valueString,
                 serverToken);
-            this.stream.Write(csAuthCheckMessage.Bytes, 0, csAuthCheckMessage.Bytes.Length);
+            this.WriteMessage(this.stream, csAuthCheckMessage);
             return csAuthCheckMessage;
         }
 
@@ -294,7 +307,7 @@
                 serverToken,
                 this.settings.AccountName,
                 this.settings.Password);
-            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
+            this.WriteMessage(this.stream, message);
         }
 
         /// <summary>
@@ -318,7 +331,7 @@
         private void SendCsQueryRealms2()
         {
             var message = QueryRealms2ClientToServerSidMessage.CreateFromHighLevelData();
-            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
+            this.WriteMessage(this.stream, message);
         }
 
         /// <summary>
@@ -351,7 +364,7 @@
                 clientToken,
                 serverToken,
                 realmTitle);
-            this.stream.Write(message.Bytes, 0, message.Bytes.Length);
+            this.WriteMessage(this.stream, message);
         }
 
         /// <summary>
