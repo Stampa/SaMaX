@@ -30,7 +30,7 @@
         /// <summary>
         /// A trace source for writing sent and received packets to a log file.
         /// </summary>
-        private static TraceSource traceSource;
+        private static TraceSource traceSource = new TraceSource("SidClientTraceSource");
 
         /// <summary>
         /// The settings for the client.
