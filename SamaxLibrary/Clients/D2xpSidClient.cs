@@ -100,7 +100,7 @@
             {
                 // TODO: Is it really called a "protocol bit"?
                 byte[] protocolBitBuffer = { 1 };
-                traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, String.Join(", ", protocolBitBuffer));
+                traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, BufferToString(protocolBitBuffer));
                 this.stream.Write(protocolBitBuffer, 0, protocolBitBuffer.Length);
             }
             catch (IOException ex)
@@ -149,6 +149,17 @@
         }
 
         /// <summary>
+        /// Returns a string representation of a byte array (buffer).
+        /// </summary>
+        /// <param name="buffer">The buffer whose string representation to return.</param>
+        /// <returns>A string representation of the buffer.</returns>
+        private static string BufferToString(byte[] buffer)
+        {
+            string result = String.Join(", ", buffer.Select(x => "0x" + x.ToString("X2")));
+            return result;
+        }
+
+        /// <summary>
         /// Writes the bytes of a specified message to the specified stream.
         /// </summary>
         /// <param name="stream">The stream to which to write.</param>
@@ -156,7 +167,7 @@
         private void WriteMessage(NetworkStream stream, SidMessage message)
         {
             byte[] messageBytes = message.Bytes;
-            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, String.Join(", ", messageBytes));
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, BufferToString(messageBytes));
             stream.Write(messageBytes, 0, messageBytes.Length);
         }
 
@@ -192,7 +203,7 @@
             }
 
             byte[] messageBytes = buffer.Take(amountOfBytesRead).ToArray();
-            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.PacketReceived, String.Join(", ", messageBytes));
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.PacketReceived, BufferToString(messageBytes));
             return messageBytes;
         }
 
