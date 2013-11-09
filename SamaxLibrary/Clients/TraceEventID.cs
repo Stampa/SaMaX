@@ -12,13 +12,23 @@
     public enum TraceEventID
     {
         /// <summary>
-        /// The identifier for the event that a message is sent.
+        /// The identifier for the event that the bytes of a message is about to be sent.
         /// </summary>
-        MessageSent,
+        MessageBytesToBeSent,
 
         /// <summary>
-        /// The identifier for the event that a packet is received.
+        /// The identifier for the event that the bytes of a message is received.
         /// </summary>
-        PacketReceived
+        MessageBytesReceived,
+
+        /// <summary>
+        /// The identifier for the event that a message is about to be sent.
+        /// </summary>
+        MessageToBeSent,
+
+        /// <summary>
+        /// The identifier for the event that a message is received.
+        /// </summary>
+        MessageReceived
     }
 }

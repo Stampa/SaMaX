@@ -99,8 +99,9 @@
             try
             {
                 // TODO: Is it really called a "protocol bit"?
+                // Furthermore, should the array be considered to be "message bytes"? (TraceEventID.MessageBytesToBeSent)
                 byte[] protocolBitBuffer = { 1 };
-                traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, BufferToString(protocolBitBuffer));
+                traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageBytesToBeSent, BufferToString(protocolBitBuffer));
                 this.stream.Write(protocolBitBuffer, 0, protocolBitBuffer.Length);
             }
             catch (IOException ex)
@@ -167,7 +168,8 @@
         private void WriteMessage(NetworkStream stream, SidMessage message)
         {
             byte[] messageBytes = message.Bytes;
-            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageSent, BufferToString(messageBytes));
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageToBeSent, message.ToString());
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageBytesToBeSent, BufferToString(messageBytes));
             stream.Write(messageBytes, 0, messageBytes.Length);
         }
 
@@ -203,8 +205,22 @@
             }
 
             byte[] messageBytes = buffer.Take(amountOfBytesRead).ToArray();
-            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.PacketReceived, BufferToString(messageBytes));
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageBytesReceived, BufferToString(messageBytes));
             return messageBytes;
+        }
+
+        /// <summary>
+        /// Reads the next SID message from the specified stream.
+        /// </summary>
+        /// <param name="stream">The stream from which to read.</param>
+        /// <param name="buffer">The buffer used to receive the message bytes.</param>
+        /// <returns>The next message in the stream.</returns>
+        private SidMessage GetMessage(NetworkStream stream, byte[] buffer)
+        {
+            byte[] messageBytes = GetMessageBytes(stream, buffer);
+            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            traceSource.TraceData(TraceEventType.Verbose, (int)TraceEventID.MessageReceived, message.ToString());
+            return message;
         }
 
         /// <summary>
@@ -227,8 +243,7 @@
         /// <see cref="SidMessageType.Ping"/></exception>
         private PingServerToClientSidMessage ReceiveScPing(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScPing(message);
             return (PingServerToClientSidMessage)message;
         }
@@ -254,8 +269,7 @@
         /// </exception>
         private AuthInfoServerToClientSidMessage ReceiveScAuthInfo(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScAuthInfo(message);
             return (AuthInfoServerToClientSidMessage)message;
         }
@@ -298,8 +312,7 @@
         /// </exception>
         private AuthCheckServerToClientSidMessage ReceiveScAuthCheck(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScAuthCheck(message);
             return (AuthCheckServerToClientSidMessage)message;
         }
@@ -330,8 +343,7 @@
         /// </exception>
         private LogonResponse2ServerToClientSidMessage ReceiveScLogonResponse2(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScLogonResponse2(message);
             return (LogonResponse2ServerToClientSidMessage)message;
         }
@@ -354,8 +366,7 @@
         /// </exception>
         private QueryRealms2ServerToClientSidMessage ReceiveScQueryRealms2(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScQueryRealms2(message);
             return (QueryRealms2ServerToClientSidMessage)message;
         }
@@ -387,8 +398,7 @@
         /// </exception>
         private LogonRealmExServerToClientSidMessage ReceiveScLogonRealmEx(byte[] buffer)
         {
-            byte[] messageBytes = this.GetMessageBytes(this.stream, buffer);
-            SidMessage message = SidMessageFactory.CreateServerToClientMessageFromBytes(messageBytes);
+            SidMessage message = GetMessage(this.stream, buffer);
             this.ValidateScLogonRealmEx(message);
             return (LogonRealmExServerToClientSidMessage)message;
         }
