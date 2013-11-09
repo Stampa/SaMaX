@@ -61,6 +61,23 @@
         }
 
         /// <summary>
+        /// Returns a string representation of this SID message.
+        /// </summary>
+        /// <returns>A string representation of this SID message.</returns>
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(this.GetType().ToString());
+            foreach (var property in this.GetType().GetProperties())
+            {
+                builder.Append(Environment.NewLine);
+                builder.Append(property.Name + ": " + property.GetValue(this));
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
         /// Gets the SID message type from the bytes that compose a SID message.
         /// </summary>
         /// <param name="messageBytes">The bytes that compose the SID message whose message type to
