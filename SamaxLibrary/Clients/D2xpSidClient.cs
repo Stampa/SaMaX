@@ -138,14 +138,13 @@
             this.SendCsPing(scPingMessage.PingValue);
             var scAuthInfoMessage = this.ReceiveScAuthInfo(buffer);
             Int32 serverToken = scAuthInfoMessage.ServerToken;
-            var csAuthCheckMessage = this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
-            Int32 clientToken = csAuthCheckMessage.ClientToken;
+            this.SendCsAuthCheck(scAuthInfoMessage.MpqFileName, scAuthInfoMessage.ValueString, scAuthInfoMessage.ServerToken);
             this.ReceiveScAuthCheck(buffer);
-            this.SendCsLogonResponse2(clientToken, serverToken);
+            this.SendCsLogonResponse2(serverToken);
             this.ReceiveScLogonResponse2(buffer);
             this.SendCsQueryRealms2();
             var scQueryRealms2Message = this.ReceiveScQueryRealms2(buffer);
-            this.SendCsLogonRealmEx(clientToken, serverToken, scQueryRealms2Message.Realms[0].Title);
+            this.SendCsLogonRealmEx(serverToken, scQueryRealms2Message.Realms[0].Title);
             var scLogonRealmExMessage = this.ReceiveScLogonRealmEx(buffer);
         }
 
@@ -284,8 +283,7 @@
         /// </param>
         /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
         /// the server.</param>
-        /// <returns>The authentication check message that was sent.</returns>
-        private AuthCheckClientToServerSidMessage SendCsAuthCheck(
+        private void SendCsAuthCheck(
             string mpqFileName,
             string valueString,
             Int32 serverToken)
@@ -300,7 +298,6 @@
                 valueString,
                 serverToken);
             this.WriteMessage(this.stream, csAuthCheckMessage);
-            return csAuthCheckMessage;
         }
 
         /// <summary>
@@ -320,14 +317,11 @@
         /// <summary>
         /// Sends a client-to-server logon response (2) message.
         /// </summary>
-        /// <param name="clientToken">The client token generated for the SID_AUTH_CHECK message.
-        /// </param>
         /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
         /// the server.</param>
-        private void SendCsLogonResponse2(Int32 clientToken, Int32 serverToken)
+        private void SendCsLogonResponse2(Int32 serverToken)
         {
             var message = LogonResponse2ClientToServerSidMessage.CreateFromHighLevelData(
-                clientToken,
                 serverToken,
                 this.settings.AccountName,
                 this.settings.Password);
@@ -374,16 +368,13 @@
         /// <summary>
         /// Sends a client-to-server logon realm ex message.
         /// </summary>
-        /// <param name="clientToken">The client token generated for the SID_AUTH_CHECK message.
-        /// </param>
         /// <param name="serverToken">The server token received in the SID_AUTH_INFO message from
         /// the server.</param>
         /// <param name="realmTitle">The realm title as received in the SID_QUERYREALMS2 message
         /// from the server.</param>
-        private void SendCsLogonRealmEx(Int32 clientToken, Int32 serverToken, string realmTitle)
+        private void SendCsLogonRealmEx(Int32 serverToken, string realmTitle)
         {
             var message = LogonRealmExClientToServerSidMessage.CreateFromHighLevelData(
-                clientToken,
                 serverToken,
                 realmTitle);
             this.WriteMessage(this.stream, message);

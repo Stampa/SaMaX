@@ -31,7 +31,7 @@
                 0x98, 0xca, 0x72, 0x56
             });
 
-        private const Int32 ValidClientToken = 0;
+        private const Int32 ValidClientToken = 0; // How are these tokens valid?
         private const Int32 ValidServerToken = 0;
         private const string ValidAccountName = "ValidAcc";
         private const string ValidPassword = "Password";
@@ -84,7 +84,6 @@
 
             Assert.That(
                 () => LogonResponse2ClientToServerSidMessage.CreateFromHighLevelData(
-                    ValidClientToken,
                     ValidServerToken,
                     accountName,
                     password),
@@ -94,7 +93,6 @@
         private IEnumerable<TestCaseData> CreateFromHighLevelDataTestSource()
         {
             yield return new TestCaseData(
-                ValidMessageBytesClientToken,
                 ValidMessageBytesServerToken,
                 ValidMessageBytesPassword)
                 .Returns(validMessageBytesPasswordHash);
@@ -102,13 +100,11 @@
 
         [TestCaseSource("CreateFromHighLevelDataTestSource")]
         public BrokenSha1Hash CreateFromHighLevelData_GeneratesCorrectPasswordHash(
-            Int32 clientToken,
             Int32 serverToken,
             string password)
         {
             const string AccountName = "Few";
             var message = LogonResponse2ClientToServerSidMessage.CreateFromHighLevelData(
-                clientToken,
                 serverToken,
                 AccountName,
                 password);

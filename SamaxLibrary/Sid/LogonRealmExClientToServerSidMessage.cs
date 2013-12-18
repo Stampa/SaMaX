@@ -75,8 +75,6 @@
         /// Creates an instance of the <see cref="LogonRealmExClientToServerSidMessage"/> class
         /// from high-level data.
         /// </summary>
-        /// <param name="clientToken">The client token, which was generated for the
-        /// client-to-server SID_AUTH_CHECK message.</param>
         /// <param name="serverToken">The server token, which was received in the server-to-client
         /// SID_AUTH_INFO message.</param>
         /// <param name="realmTitle">The realm title, which was received in the server-to-client
@@ -86,7 +84,6 @@
         /// <exception cref="ArgumentNullException"><paramref name="realmTitle"/> is
         /// <see langword="null"/>.</exception>
         public static LogonRealmExClientToServerSidMessage CreateFromHighLevelData(
-            Int32 clientToken,
             Int32 serverToken,
             string realmTitle)
         {
@@ -96,6 +93,7 @@
             }
 
             SidByteWriter writer = new SidByteWriter();
+            int clientToken = new Random().Next(4) + 1; // Investigate what values are valid here
             writer.AppendInt32(clientToken);
 
             BrokenSha1Hash tokenizedRealmPasswordHash =

@@ -94,8 +94,8 @@
         /// Creates an instance of the <see cref="LogonResponse2ClientToServerSidMessage"/> class from
         /// high-level data.
         /// </summary>
-        /// <param name="clientToken">The client token.</param>
-        /// <param name="serverToken">The server token.</param>
+        /// <param name="serverToken">The server token, which is received in the SID_AUTH_INFO
+        /// message sent from the server (see <see cref="AuthInfoServerToClientSidMessage"/>).</param>
         /// <param name="accountName">The name of the account to which to log in.</param>
         /// <param name="password">The password of the account to which to log in.</param>
         /// <returns>An instance of the <see cref="LogonResponse2ClientToServerSidMessage"/> class
@@ -103,7 +103,6 @@
         /// <exception cref="ArgumentNullException"><paramref name="accountName"/> or
         /// <paramref name="password"/> is <c>null</c>.</exception>
         public static LogonResponse2ClientToServerSidMessage CreateFromHighLevelData(
-            Int32 clientToken,
             Int32 serverToken,
             string accountName,
             string password)
@@ -122,6 +121,7 @@
             //// Make sure that the account name is not too long for SidMessage.GetMessageBytes to fail.
 
             // Note that the bytes do not include any null terminator. (What's with this comment?)
+            int clientToken = new Random().Next();
             BrokenSha1Hash passwordHash = BrokenSha1.ComputeTokenizedHash(clientToken, serverToken, password);
 
             SidByteWriter writer = new SidByteWriter();
